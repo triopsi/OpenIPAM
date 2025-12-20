@@ -6,7 +6,7 @@
         [
             "@semantic-release/exec",
             {
-                "prepareCmd": "echo \"${nextRelease.version}\" > VERSION && zip -r \"open-ipam-${nextRelease.version}.zip\" . -x @.buildignore"
+                "prepareCmd": "echo '${nextRelease.version}' > VERSION && zip -r open-ipam-${nextRelease.version}.zip . -x @.buildignore"
             }
         ],
 
