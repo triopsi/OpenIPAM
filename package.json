@@ -22,7 +22,7 @@
         "@semantic-release/changelog": "^6.0.3",
         "@semantic-release/exec": "^7.1.0",
         "@semantic-release/git": "^10.0.1",
-        "@semantic-release/gitlab": "^13.2.9",
+        "@semantic-release/github": "^12.0.2",
         "@tailwindcss/forms": "^0.5.10",
         "@tailwindcss/typography": "^0.5.19",
         "autoprefixer": "^10.4.23",
