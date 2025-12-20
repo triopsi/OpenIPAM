@@ -1,0 +1,27 @@
+<?php
+
+return [
+    'title' => 'Profile',
+    'personal_data' => 'Personal Data',
+    'change_password' => 'Change Password',
+    'two_factor_auth' => 'Two-Factor Authentication',
+    'current_password' => 'Current Password',
+    'new_password' => 'New Password',
+    'new_password_confirmation' => 'Confirm New Password',
+    'enter_code' => 'Enter Code',
+    'enter_code_description' => 'Enter the 6-digit code we sent to your email.',
+    'verification_code' => 'Verification Code',
+    'enable_2fa' => 'Enable Two-Factor Authentication',
+    'enable_2fa_description' => 'Add an extra layer of security to your account.',
+    'disable_2fa' => 'Disable Two-Factor Authentication',
+    '2fa_enabled' => 'Two-Factor Authentication is enabled for your account.',
+    '2fa_disabled' => 'Two-Factor Authentication is disabled.',
+    'send_code' => 'Send Code',
+    'verification_sent' => 'Verification code sent to your email.',
+    'profile_updated' => 'Profile updated successfully.',
+    'password_updated' => 'Password updated successfully.',
+    '2fa_enabled_success' => 'Two-Factor Authentication enabled successfully.',
+    '2fa_disabled_success' => 'Two-Factor Authentication disabled successfully.',
+    'invalid_code' => 'Invalid verification code.',
+    'code_expired' => 'Verification code has expired.',
+];

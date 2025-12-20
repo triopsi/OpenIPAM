@@ -1,0 +1,42 @@
+{
+    "$schema": "https://www.schemastore.org/package.json",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "build": "vite build",
+        "dev": "vite",
+        "test": "php artisan test",
+        "lint": "./vendor/bin/pint --test",
+        "lint-js": "eslint resources/js",
+        "lint:fix": "./vendor/bin/pint",
+        "release": "semantic-release"
+    },
+    "dependencies": {
+        "axios": "^1.7.4",
+        "concurrently": "^9.0.1",
+        "laravel-vite-plugin": "^2.0",
+        "vite": "^7.0.4"
+    },
+    "devDependencies": {
+        "@eslint/js": "^9.39.2",
+        "@semantic-release/changelog": "^6.0.3",
+        "@semantic-release/exec": "^7.1.0",
+        "@semantic-release/git": "^10.0.1",
+        "@semantic-release/gitlab": "^13.2.9",
+        "@tailwindcss/forms": "^0.5.10",
+        "@tailwindcss/typography": "^0.5.19",
+        "autoprefixer": "^10.4.23",
+        "conventional-changelog-conventionalcommits": "^7.0.2",
+        "eslint": "^9.39.2",
+        "eslint-plugin-import": "^2.32.0",
+        "postcss": "^8.5.6",
+        "postcss-nesting": "^13.0.2",
+        "semantic-release": "^25.0.2",
+        "tailwindcss": "^3.4.19"
+    },
+    "optionalDependencies": {
+        "@rollup/rollup-linux-x64-gnu": "4.9.5",
+        "@tailwindcss/oxide-linux-x64-gnu": "^4.0.1",
+        "lightningcss-oxide-linux-x64-gnu": "^1.25.1"
+    }
+}

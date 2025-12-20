@@ -1,0 +1,54 @@
+{
+    "name": "OpenIPAM",
+    "dockerComposeFile": "docker-compose.yml",
+    "service": "laravel",
+    "settings": {
+        "remote.autoForwardPorts": false
+    },
+    "portsAttributes": {
+        "9900": {
+            "onAutoForward": "ignore",
+            "label": "Laravel (Docker mapped)"
+        },
+        "3366": {
+            "onAutoForward": "ignore",
+            "label": "MariaDB (Docker mapped)"
+        },
+        "9595": {
+            "onAutoForward": "ignore",
+            "label": "phpMyAdmin (Docker mapped)"
+        },
+        "9191": {
+            "onAutoForward": "ignore",
+            "label": "Mailpit UI (Docker mapped)"
+        },
+        "1025": {
+            "onAutoForward": "ignore",
+            "label": "Mailpit SMTP (Docker mapped)"
+        }
+    },
+    "workspaceFolder": "/var/www/html",
+    "extensions": [
+        "bmewburn.vscode-intelephense-client",
+        "esbenp.prettier-vscode",
+        "ms-azuretools.vscode-docker",
+        "onecentlin.laravel-blade",
+        "onecentlin.laravel5-snippets",
+        "ryannaddy.laravel-artisan",
+        "shufo.vscode-blade-formatter",
+        "waderyan.gitblame",
+        "xdebug.php-debug",
+        "yzhang.markdown-all-in-one",
+        "Gruntfuggly.todo-tree",
+        "eamodio.gitlens",
+        "kk-web.commit-type",
+        "mechatroner.rainbow-csv",
+        "redhat.vscode-yaml",
+        "amiralizadeh9480.laravel-extra-intellisense",
+        "codingyu.laravel-goto-view",
+        "open-southeners.laravel-pint",
+        "ms-vscode.live-server",
+        "PKief.material-icon-theme"
+    ],
+    "postCreateCommand": "bash /var/www/html/.devcontainer/laravel-setup.sh"
+}

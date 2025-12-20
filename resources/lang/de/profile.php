@@ -1,0 +1,27 @@
+<?php
+
+return [
+    'title' => 'Profil',
+    'personal_data' => 'Persönliche Daten',
+    'change_password' => 'Passwort ändern',
+    'two_factor_auth' => 'Zwei-Faktor-Authentifizierung',
+    'current_password' => 'Aktuelles Passwort',
+    'new_password' => 'Neues Passwort',
+    'new_password_confirmation' => 'Neues Passwort bestätigen',
+    'enter_code' => 'Code eingeben',
+    'enter_code_description' => 'Geben Sie den 6-stelligen Code ein, den wir an Ihre E-Mail gesendet haben.',
+    'verification_code' => 'Verifizierungscode',
+    'enable_2fa' => 'Zwei-Faktor-Authentifizierung aktivieren',
+    'enable_2fa_description' => 'Fügen Sie eine zusätzliche Sicherheitsebene zu Ihrem Konto hinzu.',
+    'disable_2fa' => 'Zwei-Faktor-Authentifizierung deaktivieren',
+    '2fa_enabled' => 'Zwei-Faktor-Authentifizierung ist für Ihr Konto aktiviert.',
+    '2fa_disabled' => 'Zwei-Faktor-Authentifizierung ist deaktiviert.',
+    'send_code' => 'Code senden',
+    'verification_sent' => 'Verifizierungscode wurde an Ihre E-Mail gesendet.',
+    'profile_updated' => 'Profil erfolgreich aktualisiert.',
+    'password_updated' => 'Passwort erfolgreich aktualisiert.',
+    '2fa_enabled_success' => 'Zwei-Faktor-Authentifizierung erfolgreich aktiviert.',
+    '2fa_disabled_success' => 'Zwei-Faktor-Authentifizierung erfolgreich deaktiviert.',
+    'invalid_code' => 'Ungültiger Verifizierungscode.',
+    'code_expired' => 'Verifizierungscode ist abgelaufen.',
+];

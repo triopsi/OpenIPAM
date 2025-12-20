@@ -1,0 +1,59 @@
+version: "3"
+
+services:
+  laravel:
+    build: ./
+    ports:
+      - 9900:80
+    depends_on:
+      - db
+    environment:
+      LARAVEL_DB_HOST: db
+      LARAVEL_DB_USER: laravel_user
+      LARAVEL_DB_PASSWORD: laravel_pass
+      LARAVEL_DB_NAME: laravel
+      LARAVEL_DEBUG: 1
+    links:
+      - db
+    volumes:
+      - ../:/var/www/html
+
+  db:
+    image: mariadb:lts
+    environment:
+      MYSQL_DATABASE: laravel
+      MYSQL_USER: laravel_user
+      MYSQL_PASSWORD: laravel_pass
+      MYSQL_RANDOM_ROOT_PASSWORD: "1"
+      TZ: Europe/Berlin
+    ports:
+      - 3366:3306
+    volumes:
+      - data:/var/lib/mysql
+  cache:
+    image: redis:alpine
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+      PMA_USER: laravel_user
+      PMA_PASSWORD: laravel_pass
+      TZ: Europe/Berlin
+    ports:
+      - 9595:80
+    depends_on:
+      - db
+    links:
+      - db
+  mailpit:
+    image: axllent/mailpit
+    environment:
+      TZ: Europe/Berlin
+    ports:
+      - 9191:8025
+      - 1025:1025
+volumes:
+  laravel:
+  data:

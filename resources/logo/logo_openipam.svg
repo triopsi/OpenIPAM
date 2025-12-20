@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 40 40" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;">
+    <path id="Rand" d="M38,10L38,30C38,34.415 34.415,38 30,38L10,38C5.585,38 2,34.415 2,30L2,10C2,5.585 5.585,2 10,2L30,2C34.415,2 38,5.585 38,10Z" style="fill:rgb(60,132,249);fill-opacity:0.1;"/>
+    <g id="Baelle">
+        <circle cx="8" cy="8" r="2" style="fill:rgb(37,99,235);"/>
+        <circle cx="20" cy="8" r="2" style="fill:rgb(37,99,235);"/>
+        <circle cx="32" cy="8" r="2" style="fill:rgb(37,99,235);"/>
+        <circle cx="8" cy="20" r="2" style="fill:rgb(37,99,235);"/>
+        <circle cx="32" cy="20" r="2" style="fill:rgb(37,99,235);"/>
+        <circle cx="8" cy="32" r="2" style="fill:rgb(37,99,235);"/>
+        <circle cx="20" cy="32" r="2" style="fill:rgb(37,99,235);"/>
+        <circle cx="32" cy="32" r="2" style="fill:rgb(37,99,235);"/>
+    </g>
+    <circle id="Mitte" cx="20" cy="20" r="3" style="fill:rgb(255,109,13);"/>
+    <g id="Zaun">
+        <clipPath id="_clip1">
+            <rect x="10" y="7.25" width="8" height="1.5"/>
+        </clipPath>
+        <g clip-path="url(#_clip1)">
+            <use xlink:href="#_Image2" x="10" y="7.25" width="8px" height="2px"/>
+        </g>
+        <path d="M22,8L30,8" style="fill:none;fill-rule:nonzero;stroke:rgb(37,99,235);stroke-opacity:0.6;stroke-width:1.5px;"/>
+        <path d="M8,10L8,18" style="fill:none;fill-rule:nonzero;stroke:rgb(37,99,235);stroke-opacity:0.6;stroke-width:1.5px;"/>
+        <path d="M20,11L20,17" style="fill:none;fill-rule:nonzero;stroke:rgb(37,99,235);stroke-opacity:0.6;stroke-width:1.5px;"/>
+        <clipPath id="_clip3">
+            <rect x="31.25" y="10" width="1.5" height="8"/>
+        </clipPath>
+        <g clip-path="url(#_clip3)">
+            <use xlink:href="#_Image4" x="31.25" y="10" width="2px" height="8px"/>
+        </g>
+        <path d="M10,20L17,20" style="fill:none;fill-rule:nonzero;stroke:rgb(37,99,235);stroke-width:2px;"/>
+        <path d="M23,20L30,20" style="fill:none;fill-rule:nonzero;stroke:rgb(37,99,235);stroke-width:2px;"/>
+        <path d="M8,22L8,30" style="fill:none;fill-rule:nonzero;stroke:rgb(37,99,235);stroke-opacity:0.6;stroke-width:1.5px;"/>
+        <path d="M20,23L20,30" style="fill:none;fill-rule:nonzero;stroke:rgb(37,99,235);stroke-opacity:0.6;stroke-width:1.5px;"/>
+        <path d="M32,22L32,30" style="fill:none;fill-rule:nonzero;stroke:rgb(37,99,235);stroke-opacity:0.6;stroke-width:1.5px;"/>
+        <path d="M10,32L18,32" style="fill:none;fill-rule:nonzero;stroke:rgb(37,99,235);stroke-opacity:0.6;stroke-width:1.5px;"/>
+        <path d="M22,32L30,32" style="fill:none;fill-rule:nonzero;stroke:rgb(37,99,235);stroke-opacity:0.6;stroke-width:1.5px;"/>
+    </g>
+    <defs>
+        <image id="_Image2" width="8px" height="2px" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAACCAYAAABllJ3tAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAAF0lEQVQImWNUTX49kwEPYMInycDAwAAAgc4CEJS9z1UAAAAASUVORK5CYII="/>
+        <image id="_Image4" width="2px" height="8px" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAAICAYAAADTLS5CAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAAF0lEQVQImWNUTX49k4GBgYGJAQrIYwAAj9gCHBfOphEAAAAASUVORK5CYII="/>
+    </defs>
+</svg>

@@ -1,0 +1,430 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+env:
+  # App
+  APP_ENV: testing
+  APP_KEY: base64:2fi7wRvyNfj86cH0cS7qLrpVrgShgqPTyAQJdTb/LdE=
+
+  # DB
+  DB_CONNECTION: mysql
+  DB_HOST: 127.0.0.1
+  DB_PORT: 3306
+  DB_DATABASE: ipam_test
+  DB_USERNAME: ipam
+  DB_PASSWORD: Welcome01
+
+  # Cache/Queue
+  CACHE_DRIVER: redis
+  SESSION_DRIVER: redis
+  QUEUE_CONNECTION: redis
+  REDIS_HOST: 127.0.0.1
+  REDIS_PORT: 6379
+
+  # Tooling
+  NODE_VERSION: "24"
+  PHP_VERSION: "8.4"
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # =============================================================================
+  # LINT: PHP Syntax
+  # =============================================================================
+  php-syntax:
+    name: PHP Syntax Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: pdo_mysql, zip, mbstring, xml, gd, intl
+
+      - name: Validate composer.json
+        run: composer validate --strict
+
+      - name: Install Composer deps
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Check PHP syntax
+        run: find . -name "*.php" -not -path "./vendor/*" -exec php -l {} \;
+
+  # =============================================================================
+  # LINT: Pint
+  # =============================================================================
+  laravel-pint:
+    name: Laravel Pint (Code Style)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: pdo_mysql, zip, mbstring, xml, gd, intl
+
+      - name: Install Composer deps
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Run Pint
+        run: ./vendor/bin/pint --test -v
+
+  # =============================================================================
+  # LINT: PHPStan (allow failure)
+  # =============================================================================
+  phpstan:
+    name: PHPStan Analysis
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: pdo_mysql, zip, mbstring, xml, gd, intl
+          ini-values: memory_limit=2G
+
+      - name: Install Composer deps
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Install PHPStan
+        run: composer require --dev phpstan/phpstan --no-interaction
+
+      - name: Run PHPStan
+        run: ./vendor/bin/phpstan analyse app database routes config --memory-limit=2G
+
+  # =============================================================================
+  # LINT: ESLint (allow failure)
+  # =============================================================================
+  eslint:
+    name: ESLint
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install NPM deps
+        run: npm ci
+
+      - name: Install ESLint
+        run: npm i -D eslint @eslint/js
+
+      - name: Run ESLint
+        run: npx eslint resources/js/
+
+  # =============================================================================
+  # TEST: PHPUnit (DB + Redis)
+  # =============================================================================
+  phpunit:
+    name: PHPUnit Tests
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: ipam_test
+          MYSQL_USER: ipam
+          MYSQL_PASSWORD: Welcome01
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=15
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd="redis-cli ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: pdo_mysql, zip, mbstring, xml, gd, intl, redis
+          coverage: xdebug
+          ini-values: memory_limit=2G
+
+      - name: Setup Node.js (for completeness)
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install Composer deps
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Install NPM deps
+        run: npm ci
+
+      - name: Setup Laravel (.env)
+        run: |
+          cp .env.example .env
+          php artisan key:generate --force
+          php artisan config:clear
+
+      - name: Wait for MySQL/Redis
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq netcat-openbsd
+          until nc -z 127.0.0.1 3306; do sleep 1; done
+          until nc -z 127.0.0.1 6379; do sleep 1; done
+
+      - name: Migrate + Seed (testing)
+        run: |
+          php artisan migrate --force --env=testing
+          php artisan db:seed --force --env=testing
+
+      - name: Run PHPUnit
+        run: |
+          mkdir -p storage/logs
+          XDEBUG_MODE=coverage ./vendor/bin/phpunit \
+            --colors=never \
+            --testdox \
+            --log-junit storage/logs/junit.xml \
+            --coverage-text \
+            --coverage-cobertura coverage.xml
+
+      - name: Upload test artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: phpunit-artifacts
+          path: |
+            storage/logs/junit.xml
+            coverage.xml
+
+  # =============================================================================
+  # TEST: Laravel config test
+  # =============================================================================
+  laravel-config-test:
+    name: Laravel Configuration Test
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: ipam_test
+          MYSQL_USER: ipam
+          MYSQL_PASSWORD: Welcome01
+        ports:
+          - 3306:3306
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: pdo_mysql, zip, mbstring, xml, gd, intl, redis
+
+      - name: Install Composer deps
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Setup Laravel (.env)
+        run: |
+          cp .env.example .env
+          php artisan key:generate --force
+          php artisan config:clear
+
+      - name: Test Laravel configuration
+        run: |
+          php artisan config:cache
+          php artisan route:cache
+          php artisan view:cache
+          php artisan optimize
+          php artisan about
+
+  # =============================================================================
+  # TEST: Migration test
+  # =============================================================================
+  migration-test:
+    name: Migration Test
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: ipam_test
+          MYSQL_USER: ipam
+          MYSQL_PASSWORD: Welcome01
+        ports:
+          - 3306:3306
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: pdo_mysql, zip, mbstring, xml, gd, intl, redis
+
+      - name: Install Composer deps
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Setup Laravel (.env)
+        run: |
+          cp .env.example .env
+          php artisan key:generate --force
+          php artisan config:clear
+
+      - name: Test migrations
+        run: |
+          php artisan migrate:fresh --force --env=testing
+          php artisan migrate:rollback --step=5 --force --env=testing
+          php artisan migrate --force --env=testing
+
+  # =============================================================================
+  # SECURITY: Composer audit (allow failure)
+  # =============================================================================
+  security-php:
+    name: Composer Security Audit
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+      - name: Composer audit
+        run: composer audit --no-dev
+
+  # =============================================================================
+  # SECURITY: npm audit (allow failure)
+  # =============================================================================
+  security-npm:
+    name: NPM Security Audit
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - name: Install deps
+        run: npm ci
+      - name: NPM audit (prod)
+        run: npm audit --audit-level high --production
+
+  # =============================================================================
+  # BUILD: Vite build
+  # =============================================================================
+  build-assets:
+    name: Build Frontend Assets
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP (needed if build reads vendor assets, e.g. filament)
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: zip
+
+      - name: Install Composer deps (vendor needed for filament css import)
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install NPM deps
+        run: npm ci
+
+      - name: Build assets
+        run: npm run build
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-assets
+          path: public/build/
+
+  # =============================================================================
+  # RELEASE: semantic-release (only main push)
+  # =============================================================================
+  semantic-release:
+    name: Semantic Release
+    runs-on: ubuntu-latest
+    needs:
+      - php-syntax
+      - laravel-pint
+      - phpunit
+      - laravel-config-test
+      - migration-test
+      - security-php
+      - security-npm
+      - build-assets
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install NPM deps
+        run: npm ci
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-assets
+          path: public/build/
+
+      - name: Run semantic-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npx semantic-release --debug

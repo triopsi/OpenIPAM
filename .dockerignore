@@ -1,0 +1,40 @@
+# Docker
+.dockerignore
+Dockerfile*
+docker-compose*
+.git
+.gitignore
+README.md
+.env
+.env.backup
+.env.production
+.phpunit.result.cache
+Homestead.json
+Homestead.yaml
+auth.json
+npm-debug.log
+yarn-error.log
+
+# Laravel
+/node_modules
+/public/build
+/public/hot
+/public/storage
+/storage/*.key
+/vendor
+.env
+.env.backup
+.env.production
+.phpunit.result.cache
+Homestead.json
+Homestead.yaml
+auth.json
+npm-debug.log
+yarn-error.log
+
+# Tests
+/tests
+phpunit.xml
+
+# Development
+/.devcontainer

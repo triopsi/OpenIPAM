@@ -1,0 +1,84 @@
+
+services:
+  openipam:
+    build: .
+    container_name: ipam-app
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    environment:
+      DB_CONNECTION: mysql
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_DATABASE: ipam
+      DB_USERNAME: ipam
+      DB_PASSWORD: secret # Change me
+
+      # Admin bootstrap (nur beim ersten Start sinnvoll)
+      ADMIN_USERNAME: admin # Change me
+      ADMIN_PASSWORD: admin123 # Change me
+      ADMIN_EMAIL: admin@example.com # Change me
+
+      # Redis (wenn du es nutzen willst)
+      CACHE_STORE: redis
+      SESSION_DRIVER: redis
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+
+      # Mail (Beispiel)
+      MAIL_MAILER: smtp
+      MAIL_HOST: your-mail-host
+      MAIL_PORT: 587
+      MAIL_USERNAME: ""
+      MAIL_PASSWORD: ""
+      MAIL_ENCRYPTION: tls
+      MAIL_FROM_ADDRESS: noreply@ipam.local
+      MAIL_FROM_NAME: IPAM
+    volumes:
+      - openipam-storage:/var/www/html/storage
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - openipam-net
+
+  db:
+    image: mariadb:10.11
+    container_name: ipam-db
+    restart: unless-stopped
+    environment:
+      - MYSQL_DATABASE=ipam
+      - MYSQL_USER=ipam
+      - MYSQL_PASSWORD=secret # Change me
+      - MYSQL_ROOT_PASSWORD=root
+    volumes:
+      - openipam-db-storage:/var/lib/mysql
+    networks:
+      - openipam-net
+    healthcheck:
+      test: ["CMD-SHELL", "mariadb-admin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 20s
+
+  redis:
+    image: redis:7-alpine
+    container_name: ipam-redis
+    restart: unless-stopped
+    networks:
+      - openipam-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+networks:
+  openipam-net:
+
+volumes:
+  openipam-storage:
+  openipam-db-storage:

@@ -1,0 +1,6 @@
+Name,Hostname,MAC Address,Type,Location,Status,URL,Description,Primary IP,Secondary IPs
+Router-01,router01.example.com,00:1A:2B:3C:4D:5E,router,Server Room,active,http://router01.example.com,Main gateway router,192.168.1.1,10.0.0.1;172.16.0.1
+Switch-01,switch01.example.com,00:1A:2B:3C:4D:5F,switch,Server Room,active,,24-port gigabit switch,192.168.1.2,
+Firewall-01,firewall01.example.com,00:1A:2B:3C:4D:60,firewall,DMZ,active,https://firewall01.example.com,Main security appliance,10.0.0.1,192.168.100.1
+Server-Web,web01.example.com,00:1A:2B:3C:4D:61,server,Data Center,active,https://web01.example.com,Web server for main site,192.168.10.10,2001:db8::1;fe80::1
+Laptop-Admin,laptop-admin.example.com,00:1A:2B:3C:4D:62,laptop,Office,inactive,,Administrator laptop,192.168.1.100,
