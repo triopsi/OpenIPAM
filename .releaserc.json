@@ -6,7 +6,7 @@
         [
             "@semantic-release/exec",
             {
-                "prepareCmd": "echo '${nextRelease.version}' > VERSION && zip -r open-ipam-${nextRelease.version}.zip . -x @.buildignore"
+                "prepareCmd": "echo '${nextRelease.version}' > VERSION && zip -r open-ipam.zip . -x @.buildignore"
             }
         ],
 
@@ -22,8 +22,8 @@
             {
                 "assets": [
                     {
-                        "path": "open-ipam-${nextRelease.version}.zip",
-                        "label": "open-ipam-${nextRelease.version}.zip"
+                        "path": "open-ipam.zip",
+                        "label": "open-ipam.zip"
                     },
                     {
                         "path": "CHANGELOG.md",
