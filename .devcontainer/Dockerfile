@@ -33,6 +33,9 @@ RUN docker-php-ext-configure intl \
 RUN curl -sL https://deb.nodesource.com/setup_24.x | bash - ; \
 	apt-get install -y nodejs;
 
+# Update npm to latest globally
+RUN npm install -g npm@latest && npm cache clean --force
+
 # Install additional PHP extensions
 RUN set -ex; \
 	apt-get update; \
