@@ -76,6 +76,9 @@ RUN composer install --no-dev --optimize-autoloader
 # Install Node dependencies and build assets
 RUN npm install && npm run build
 
+# Update npm to latest globally
+RUN npm install -g npm@latest && npm cache clean --force
+
 # Create storage and bootstrap/cache directories
 RUN mkdir -p storage/logs storage/framework/{cache,sessions,views} bootstrap/cache \
     && chown -R www-data:www-data storage bootstrap/cache \
