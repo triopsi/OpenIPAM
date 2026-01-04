@@ -8,7 +8,7 @@
     "require": {
         "php": "^8.4",
         "andreiio/blade-remix-icon": "^3.7",
-        "filament/filament": "^3.2",
+        "filament/filament": "^4.4",
         "laravel/fortify": "^1.30",
         "laravel/framework": "^12.0",
         "laravel/sanctum": "^4.2",
