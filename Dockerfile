@@ -1,5 +1,5 @@
 # Use PHP 8.4 with Apache
-FROM php:8.4-apache-trixie
+FROM php:8.5.2-apache-trixie
 
 # Set Timezone
 ENV TZ="Europe/Berlin"
