@@ -13,7 +13,7 @@ COPY --from=composer:2 /usr/bin/composer /usr/local/bin/composer
 COPY .docker/apache.conf /etc/apache2/sites-available/000-default.conf
 EXPOSE 8080
 
-FROM node:24-bookworm-slim AS node
+FROM node:25-bookworm-slim AS node
 
 FROM base AS development
 ENV COMPOSER_ALLOW_SUPERUSER=1
