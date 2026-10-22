@@ -69,10 +69,11 @@ class NetworkDiscoveryTest extends TestCase
     /**
      * Verify duplicate MAC address detection.
      *
-     * Expect: The duplicate-MAC query finds both devices and preserves their expected ordering.
+     * Expect: The duplicate-MAC query finds exactly both matching devices even when their creation timestamps are identical.
      */
     public function test_duplicate_mac_address_detection(): void
     {
+        $this->freezeTime();
         $user = User::factory()->create();
         $macAddress = '00:11:22:33:44:55';
 
@@ -95,14 +96,12 @@ class NetworkDiscoveryTest extends TestCase
 
         $this->assertGreaterThan(1, $duplicateCount);
 
-        // In a real application, you'd want to prevent duplicates
+        // Duplicate detection depends on membership, not database row ordering.
         $duplicates = Device::where('mac_address', $macAddress)
-            ->orderBy('created_at')
             ->get();
 
         $this->assertCount(2, $duplicates);
-        $this->assertEquals('device1', $duplicates->first()->hostname);
-        $this->assertEquals('device2', $duplicates->last()->hostname);
+        $this->assertEqualsCanonicalizing([$device1->id, $device2->id], $duplicates->modelKeys());
     }
 
     /**
