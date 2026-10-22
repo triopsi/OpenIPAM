@@ -3,6 +3,7 @@
 namespace Tests\Feature\Filament;
 
 use App\Filament\Auth\Profile;
+use App\Filament\Pages\Auth\EmailTwoFactorChallenge;
 use App\Filament\Resources\Devices\DeviceResource;
 use App\Filament\Resources\IpAddresses\IpAddressResource;
 use App\Filament\Resources\IpAddressGroups\IpAddressGroupResource;
@@ -14,6 +15,7 @@ use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Livewire\Livewire;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 class PanelLocalizationTest extends TestCase
@@ -104,9 +106,10 @@ class PanelLocalizationTest extends TestCase
     /**
      * Switch the two-factor schema from status information to code verification.
      *
-     * Expect: The translated code form accepts a valid code, disables two-factor authentication and clears the code.
+     * Expect: Valid six-digit codes retain leading zeros, disable two-factor authentication and are cleared after verification.
      */
-    public function test_two_factor_schema_can_verify_and_disable(): void
+    #[DataProvider('verificationCodes')]
+    public function test_two_factor_schema_can_verify_and_disable(string $code): void
     {
         Notification::fake();
         app()->setLocale('en');
@@ -118,6 +121,7 @@ class PanelLocalizationTest extends TestCase
             ->assertSet('isVerifying', true)
             ->assertSee(__('profile.enter_code'));
 
+        $user->update(['email_two_factor_code' => $code]);
         $page->fillForm(['verification_code' => $user->fresh()->email_two_factor_code], 'twoFactorForm')
             ->call('verifyAndDisable')
             ->assertHasNoFormErrors()
@@ -126,6 +130,77 @@ class PanelLocalizationTest extends TestCase
 
         $this->assertFalse($user->fresh()->email_two_factor_enabled);
         $this->assertNull($user->fresh()->email_two_factor_code);
+    }
+
+    /**
+     * Verify sign-in codes through the challenge form, including leading-zero values.
+     *
+     * Expect: Every valid code completes the session challenge and clears the stored code without disabling 2FA.
+     */
+    #[DataProvider('verificationCodes')]
+    public function test_login_challenge_preserves_six_digit_codes(string $code): void
+    {
+        Notification::fake();
+        $user = User::factory()->create(['email_two_factor_code' => $code]);
+        $this->actingAs($user)->withSession(['email_2fa_code_sent' => true]);
+
+        Livewire::test(EmailTwoFactorChallenge::class)
+            ->fillForm(['code' => $code])
+            ->call('verify')->assertHasNoFormErrors()
+            ->assertRedirect(Filament::getUrl());
+
+        $this->assertTrue(session('email_2fa_verified'));
+        $this->assertNull($user->fresh()->email_two_factor_code);
+        $this->assertTrue($user->fresh()->email_two_factor_enabled);
+    }
+
+    /**
+     * Reject malformed, incorrect and expired codes in both two-factor forms.
+     *
+     * Expect: Neither path completes verification or clears the stored code when validation or code verification fails.
+     */
+    public function test_two_factor_forms_reject_invalid_codes(): void
+    {
+        Notification::fake();
+        foreach (['12345', '1234567', '12e345', '12345x', '654321', 'expired'] as $input) {
+            foreach ([Profile::class, EmailTwoFactorChallenge::class] as $component) {
+                $user = User::factory()->create(['email_two_factor_code' => '012345']);
+                $this->actingAs($user)->withSession(['email_2fa_code_sent' => true, 'email_2fa_verified' => false]);
+                $page = Livewire::test($component);
+                if ($component === Profile::class) {
+                    $page->call('requestDisableCode');
+                }
+                $user->update([
+                    'email_two_factor_code' => '012345',
+                    'email_two_factor_expires_at' => $input === 'expired' ? now()->subMinute() : now()->addMinutes(10),
+                ]);
+                $isProfile = $component === Profile::class;
+                $field = $isProfile ? 'verification_code' : 'code';
+                $page->fillForm([$field => $input === 'expired' ? '012345' : $input], $isProfile ? 'twoFactorForm' : 'form')
+                    ->call($isProfile ? 'verifyAndDisable' : 'verify');
+                if (in_array($input, ['654321', 'expired'], true)) {
+                    $page->assertHasNoFormErrors([], $isProfile ? 'twoFactorForm' : 'form');
+                } else {
+                    $page->assertHasFormErrors([$field], $isProfile ? 'twoFactorForm' : 'form');
+                }
+                if ($isProfile) {
+                    $page->assertSet('isVerifying', true);
+                }
+                $this->assertFalse(session('email_2fa_verified'));
+                $this->assertTrue($user->fresh()->email_two_factor_enabled);
+                $this->assertSame('012345', $user->fresh()->email_two_factor_code);
+            }
+        }
+    }
+
+    /**
+     * Supply deterministic codes that cover ordinary values and leading zeros.
+     *
+     * @return array<string, array{string}> Codes must remain strings throughout form processing.
+     */
+    public static function verificationCodes(): array
+    {
+        return ['ordinary' => ['123456'], 'leading zero' => ['012345'], 'all zeros' => ['000000']];
     }
 
     /**

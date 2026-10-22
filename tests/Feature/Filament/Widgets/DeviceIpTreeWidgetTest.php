@@ -2,12 +2,15 @@
 
 namespace Tests\Feature\Filament\Widgets;
 
+use App\Filament\Resources\Devices\DeviceResource;
+use App\Filament\Resources\Devices\Pages\ListDevices;
 use App\Filament\Widgets\DeviceIpTreeWidget;
 use App\Models\Device;
 use App\Models\IpAddress;
 use App\Models\IpAddressGroup;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class DeviceIpTreeWidgetTest extends TestCase
@@ -19,6 +22,46 @@ class DeviceIpTreeWidgetTest extends TestCase
         parent::setUp();
 
         $this->actingAs(User::factory()->create(['is_admin' => true]));
+    }
+
+    /**
+     * Render the empty dashboard tree after replacing the device creation page with a modal.
+     *
+     * Expect: Both creation links render successfully and target the list's native creation action.
+     */
+    public function test_empty_widget_links_to_the_device_creation_modal(): void
+    {
+        $url = DeviceResource::getUrl('index', ['action' => 'create']);
+        $widget = Livewire::withoutLazyLoading()->test(DeviceIpTreeWidget::class)
+            ->assertSee(__('widgets.device_tree.add_device'))
+            ->assertSee(__('widgets.device_tree.create_first_device'));
+
+        $this->assertSame(2, substr_count($widget->html(), 'href="'.e($url).'"'));
+    }
+
+    /**
+     * Follow the dashboard creation link when the inventory already contains devices.
+     *
+     * Expect: The tree renders its creation link and the destination opens a working modal that can save a device.
+     */
+    public function test_populated_widget_creation_link_opens_a_working_modal(): void
+    {
+        Device::factory()->create(['name' => 'Existing server']);
+        $url = DeviceResource::getUrl('index', ['action' => 'create']);
+        Livewire::withoutLazyLoading()->test(DeviceIpTreeWidget::class)
+            ->assertSee('Existing server')
+            ->assertSeeHtml('href="'.e($url).'"');
+
+        Livewire::withQueryParams(['action' => 'create'])->test(ListDevices::class)
+            ->assertSet('defaultAction', 'create')
+            ->call('mountDefaultActions')
+            ->assertSet('mountedActions.0.name', 'create')
+            ->assertSet('mountedActions.0.context.mountedFromUrl', true)
+            ->fillForm(['name' => 'Created from dashboard'], 'mountedActionSchema0')
+            ->callMountedAction()
+            ->assertHasNoActionErrors();
+
+        $this->assertDatabaseHas('devices', ['name' => 'Created from dashboard']);
     }
 
     /**

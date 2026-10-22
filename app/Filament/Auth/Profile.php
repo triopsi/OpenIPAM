@@ -249,7 +249,9 @@ class Profile extends EditProfile
                             ->label(__('profile.verification_code'))
                             ->required()
                             ->length(6)
-                            ->numeric()
+                            ->regex('/^[0-9]{6}$/')
+                            ->inputMode('numeric')
+                            ->autocomplete('one-time-code')
                             ->placeholder('000000')
                             ->autofocus(),
                     ])

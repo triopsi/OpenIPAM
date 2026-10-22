@@ -20,7 +20,7 @@
                 </div>
             </div>
 
-            <x-filament::button tag="a" :href="route('filament.admin.resources.devices.create')" color="primary" size="sm" icon="heroicon-o-plus">
+            <x-filament::button tag="a" :href="\App\Filament\Resources\Devices\DeviceResource::getUrl('index', ['action' => 'create'])" color="primary" size="sm" icon="heroicon-o-plus">
                 {{ __('widgets.device_tree.add_device') }}
             </x-filament::button>
         </div>
@@ -231,7 +231,7 @@
                         {{ __('widgets.device_tree.create_first_device_hint') }}
                     </p>
                     <div class="mt-4">
-                        <x-filament::button tag="a" :href="route('filament.admin.resources.devices.create')" color="primary" icon="heroicon-o-plus"
+                        <x-filament::button tag="a" :href="\App\Filament\Resources\Devices\DeviceResource::getUrl('index', ['action' => 'create'])" color="primary" icon="heroicon-o-plus"
                             size="sm">
                             {{ __('widgets.device_tree.create_first_device') }}
                         </x-filament::button>
