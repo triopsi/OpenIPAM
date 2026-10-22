@@ -52,7 +52,7 @@ jobs:
           extensions: bcmath, gd, intl, mbstring, pdo_sqlite, zip
           coverage: none
           ini-values: memory_limit=512M
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: '24'
           cache: npm
@@ -146,7 +146,7 @@ jobs:
           php-version: '8.4'
           coverage: none
           ini-values: memory_limit=512M
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: '24'
           cache: npm
