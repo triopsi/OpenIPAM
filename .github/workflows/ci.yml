@@ -37,7 +37,7 @@ jobs:
           cp .env.example .env
           php artisan key:generate --no-interaction
           vendor/bin/phpunit --log-junit junit.xml
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: tests-php-${{ matrix.php }}
