@@ -20,14 +20,16 @@ OpenIPAM helps you keep track of what lives on your network, which addresses are
 
 ![OpenIPAM dashboard](assets/screenshot-01.png)
 
-[Why OpenIPAM?](#why-openipam) · [Quick start](#quick-start) · [HTTPS & remote access](#https--remote-access) · [Updates & backups](#updates--backups) · [Contributing](CONTRIBUTING.md)
+[Why OpenIPAM?](#why-openipam) · [Subnet grid](#subnet-grid) · [Quick start](#quick-start) · [HTTPS & remote access](#https--remote-access) · [Updates & backups](#updates--backups) · [Contributing](CONTRIBUTING.md)
 
 ## Why OpenIPAM?
 
 Once a homelab grows beyond a handful of devices, remembering which IP belongs to which machine becomes a project of its own. OpenIPAM gives those details a place to live.
 
+- **See subnet occupancy at a glance.** Open the subnet grid to distinguish free, assigned and reserved addresses, then assign a free host to a device with a click, creating the device inline if needed.
 - **Find the next free address.** See available, assigned and reserved IPs, and assign an available address to a device without searching through a spreadsheet.
 - **Keep devices and addresses together.** Record hostnames, MAC addresses, device types, locations, descriptions and service URLs. Associate multiple addresses with a device and mark its primary IP.
+- **Use your own device types.** Click **+** beside **Type** when creating or editing a device to add a type such as NAS or Smart plug. It is selected immediately and becomes available to every other device, including in filters.
 - **Give your network some structure.** Organize IPv4 and IPv6 addresses into groups, document subnets and VLAN IDs, and create address ranges in bulk.
 - **Bring your existing inventory.** Import device lists from CSV with column mapping and export selected devices when you need to share or process them elsewhere.
 - **Connect your own tools.** Use the token-based REST API to manage devices, addresses and groups from scripts or other applications.
@@ -35,6 +37,17 @@ Once a homelab grows beyond a handful of devices, remembering which IP belongs t
 - **Make it comfortable to use.** Choose English or German, personalize your profile and enable email two-factor authentication for browser sign-in.
 
 OpenIPAM is an inventory and address-management tool. It helps you document and manage assignments; it does not replace your DHCP or DNS server.
+
+## Subnet grid
+
+Open **IPAM → Subnet grid**, or use **Subnet grid** above the IP address list. Select a documented network or enter an IPv4 CIDR such as `192.168.1.0/24`, then choose **Open subnet**.
+
+- Each tile represents an address. Labels and colors distinguish free, assigned and reserved hosts; network and broadcast addresses have their own labels.
+- Click a free address to assign it to a device, optionally as its primary IP. Use the **+** button beside the device picker to create a missing device in a nested modal; it is selected automatically when you return. Opening a network creates no records: only an address you assign is added to the inventory. Under **Devices**, **New device** also opens a modal directly above the device list.
+- Assigned and reserved addresses link to the existing IP editor. Hover over a tile to see its full address and any linked device names.
+- Totals cover the whole network. Larger networks are split into blocks of at most 256 cells; the subnet and current block are preserved in the URL for sharing.
+
+Availability reflects documented inventory, **not a live network scan**. An undocumented address may already be in use on your physical network. Network and broadcast endpoints are protected for `/0`–`/30`; `/31` and `/32` hosts remain assignable. Occupancy includes reserved endpoints. Existing CIDR, prefix-only (`/24`) and contiguous netmask (`255.255.255.0`) values supply the documented-network suggestions. IPv6 remains managed through the IP address list.
 
 ## Quick start
 

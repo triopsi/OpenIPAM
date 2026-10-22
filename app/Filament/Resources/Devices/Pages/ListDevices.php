@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Devices\Pages;
 use App\Filament\Resources\Devices\DeviceResource;
 use App\Models\Device;
 use App\Models\IpAddress;
+use App\Services\DeviceCreationService;
 use Exception;
 use Filament\Actions;
 use Filament\Actions\Action;
@@ -18,6 +19,7 @@ use Filament\Resources\Pages\ListRecords;
 use Filament\Schemas\Components\Section;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\HtmlString;
+use Illuminate\Validation\ValidationException;
 use League\Csv\Reader;
 use League\Csv\Statement;
 
@@ -36,7 +38,9 @@ class ListDevices extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make(),
+            CreateAction::make()
+                ->modalWidth('5xl')
+                ->using(fn (array $data): Device => $this->createDevice($data)),
             Action::make('csvImport')
                 ->label(__('devices.csv_import.title'))
                 ->icon('heroicon-o-document-arrow-up')
@@ -733,6 +737,25 @@ class ListDevices extends ListRecords
             }
         } catch (Exception $e) {
             // Silently fail if auto-suggestion doesn't work
+        }
+    }
+
+    /**
+     * Create a device and its selected IP relationships as one atomic operation.
+     *
+     * Availability can change while a dialog is open. Attach any service errors
+     * to the mounted form fields and keep the dialog open for correction.
+     */
+    protected function createDevice(array $data): Device
+    {
+        try {
+            return app(DeviceCreationService::class)->create($data);
+        } catch (ValidationException $exception) {
+            $errors = [];
+            foreach ($exception->errors() as $field => $messages) {
+                $errors[$this->getMountedActionSchema()->getStatePath().'.'.$field] = $messages;
+            }
+            throw ValidationException::withMessages($errors);
         }
     }
 }

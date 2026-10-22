@@ -2,12 +2,12 @@
 
 namespace App\Filament\Resources\Devices;
 
-use App\Filament\Resources\Devices\Pages\CreateDevice;
 use App\Filament\Resources\Devices\Pages\EditDevice;
 use App\Filament\Resources\Devices\Pages\ListDevices;
 use App\Filament\Resources\Devices\RelationManagers\IpAddressesRelationManager;
+use App\Filament\Resources\Devices\Schemas\DeviceForm;
 use App\Models\Device;
-use App\Services\IpAssignmentService;
+use App\Services\DeviceTypeService;
 use Closure;
 use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
@@ -15,14 +15,9 @@ use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\TextInput;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Resources\Resource;
-use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
-use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -92,118 +87,7 @@ class DeviceResource extends Resource
      */
     public static function form(Schema $schema): Schema
     {
-        return $schema
-            ->components([
-                Section::make(__('devices.sections.device_information'))
-                    ->schema([
-                        TextInput::make('name')
-                            ->label(__('devices.fields.name'))
-                            ->required()
-                            ->maxLength(255),
-                        TextInput::make('hostname')
-                            ->label(__('devices.fields.hostname'))
-                            ->maxLength(255),
-                        TextInput::make('mac_address')
-                            ->label(__('devices.fields.mac_address'))
-                            ->maxLength(255)
-                            ->placeholder('00:00:00:00:00:00'),
-                    ])->columns(3),
-
-                Section::make(__('devices.sections.details'))
-                    ->schema([
-                        Select::make('type')
-                            ->label(__('devices.fields.type'))
-                            ->options([
-                                'server' => __('devices.types.server'),
-                                'workstation' => __('devices.types.workstation'),
-                                'laptop' => __('devices.types.laptop'),
-                                'printer' => __('devices.types.printer'),
-                                'switch' => __('devices.types.switch'),
-                                'router' => __('devices.types.router'),
-                                'firewall' => __('devices.types.firewall'),
-                                'access_point' => __('devices.types.access_point'),
-                                'other' => __('devices.types.other'),
-                            ])
-                            ->searchable(),
-                        TextInput::make('location')
-                            ->label(__('devices.fields.location'))
-                            ->maxLength(255),
-                        Select::make('status')
-                            ->label(__('devices.fields.status'))
-                            ->required()
-                            ->options([
-                                'active' => __('devices.statuses.active'),
-                                'inactive' => __('devices.statuses.inactive'),
-                                'maintenance' => __('devices.statuses.maintenance'),
-                            ])
-                            ->default('active'),
-                    ])->columns(3),
-
-                Section::make(__('devices.sections.description'))
-                    ->schema([
-                        Textarea::make('description')
-                            ->label(__('devices.fields.description'))
-                            ->rows(3)
-                            ->columnSpanFull(),
-                        TextInput::make('url')
-                            ->label(__('devices.fields.url'))
-                            ->url()
-                            ->placeholder('https://example.com/dashboard')
-                            ->maxLength(255)
-                            ->columnSpanFull()
-                            ->helperText(__('devices.helpers.url')),
-                    ]),
-
-                Section::make(__('devices.sections.ip_addresses'))
-                    ->schema([
-                        Select::make('primary_ip_address_id')
-                            ->label(__('devices.fields.primary_ip'))
-                            ->placeholder(__('devices.placeholders.primary_ip'))
-                            ->options(function () {
-                                $service = new IpAssignmentService;
-
-                                return $service->prepareIpOptionsForDevice();
-                            })
-                            ->searchable()
-                            ->nullable()
-                            ->live()
-                            ->afterStateUpdated(function ($state, Set $set) {
-                                if ($state) {
-                                    $set('additional_ip_addresses', []);
-                                }
-                            })
-                            ->default(function () {
-                                $service = new IpAssignmentService;
-                                $nextIp = $service->getNextAvailableIp();
-
-                                return $nextIp?->id;
-                            }),
-
-                        Select::make('additional_ip_addresses')
-                            ->label(__('devices.fields.additional_ips'))
-                            ->multiple()
-                            ->options(function (Get $get) {
-                                $service = new IpAssignmentService;
-                                $options = $service->prepareIpOptionsForDevice();
-
-                                // Entferne die bereits als primär ausgewählte IP
-                                $primaryId = $get('primary_ip_address_id');
-                                if ($primaryId) {
-                                    foreach ($options as $groupName => &$groupOptions) {
-                                        unset($groupOptions[$primaryId]);
-                                        if (empty($groupOptions)) {
-                                            unset($options[$groupName]);
-                                        }
-                                    }
-                                }
-
-                                return $options;
-                            })
-                            ->searchable(),
-                    ])
-                    ->visible(fn (string $operation): bool => $operation === 'create')
-                    ->collapsible(),
-            ]);
+        return $schema->components(DeviceForm::components());
     }
 
     /**
@@ -241,17 +125,7 @@ class DeviceResource extends Resource
                         'workstation', 'laptop' => 'info',
                         default => 'gray',
                     })
-                    ->formatStateUsing(fn (string $state): string => match ($state) {
-                        'server' => __('devices.types.server'),
-                        'workstation' => __('devices.types.workstation'),
-                        'laptop' => __('devices.types.laptop'),
-                        'printer' => __('devices.types.printer'),
-                        'switch' => __('devices.types.switch'),
-                        'router' => __('devices.types.router'),
-                        'firewall' => __('devices.types.firewall'),
-                        'access_point' => __('devices.types.access_point'),
-                        default => __('devices.types.other'),
-                    })
+                    ->formatStateUsing(fn (string $state): string => app(DeviceTypeService::class)->label($state))
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('location')
@@ -302,17 +176,7 @@ class DeviceResource extends Resource
             ->filters([
                 SelectFilter::make('type')
                     ->label(__('devices.filters.type'))
-                    ->options([
-                        'server' => __('devices.types.server'),
-                        'workstation' => __('devices.types.workstation'),
-                        'laptop' => __('devices.types.laptop'),
-                        'printer' => __('devices.types.printer'),
-                        'switch' => __('devices.types.switch'),
-                        'router' => __('devices.types.router'),
-                        'firewall' => __('devices.types.firewall'),
-                        'access_point' => __('devices.types.access_point'),
-                        'other' => __('devices.types.other'),
-                    ]),
+                    ->options(fn (): array => app(DeviceTypeService::class)->options()),
                 SelectFilter::make('status')
                     ->label(__('devices.filters.status'))
                     ->options([
@@ -359,17 +223,7 @@ class DeviceResource extends Resource
                                     $device->name,
                                     $device->hostname ?? '',
                                     $device->mac_address ?? '',
-                                    match ($device->type ?? 'other') {
-                                        'server' => __('devices.types.server'),
-                                        'workstation' => __('devices.types.workstation'),
-                                        'laptop' => __('devices.types.laptop'),
-                                        'printer' => __('devices.types.printer'),
-                                        'switch' => __('devices.types.switch'),
-                                        'router' => __('devices.types.router'),
-                                        'firewall' => __('devices.types.firewall'),
-                                        'access_point' => __('devices.types.access_point'),
-                                        default => __('devices.types.other'),
-                                    },
+                                    app(DeviceTypeService::class)->label($device->type),
                                     $device->location ?? '',
                                     match ($device->status ?? 'active') {
                                         'active' => __('devices.statuses.active'),
@@ -453,7 +307,6 @@ class DeviceResource extends Resource
     {
         return [
             'index' => ListDevices::route('/'),
-            'create' => CreateDevice::route('/create'),
             'edit' => EditDevice::route('/{record}/edit'),
         ];
     }

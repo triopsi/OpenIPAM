@@ -1,6 +1,12 @@
 <?php
 
 return [
+    'custom_types' => [
+        'name' => 'Typbezeichnung',
+        'create' => 'Neuer Gerätetyp',
+    ],
+    'create_modal_title' => 'Neues Gerät',
+    'ip_unavailable' => 'Eine ausgewählte IP-Adresse ist nicht mehr verfügbar. Wählen Sie eine andere Adresse und versuchen Sie es erneut.',
     'csv_import' => [
         'title' => 'CSV Import',
         'description' => 'Geräte mit IP-Adressen aus CSV-Dateien importieren',

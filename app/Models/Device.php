@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\DeviceTypeService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -21,6 +22,16 @@ class Device extends Model
         'status',
         'last_seen',
     ];
+
+    /** Register custom type values introduced by imports or direct model writes. */
+    protected static function booted(): void
+    {
+        static::saved(function (Device $device): void {
+            if (is_string($device->type)) {
+                app(DeviceTypeService::class)->registerExisting($device->type);
+            }
+        });
+    }
 
     /**
      * Get the attributes that should be cast.

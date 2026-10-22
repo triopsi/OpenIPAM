@@ -3,3 +3,29 @@
 @source '../../../../app/Filament/**/*';
 @source '../../../views/**/*.blade.php';
 @source '../../../js/**/*.js';
+
+/* Keep the inventory raster compact, keyboard-accessible and responsive. */
+.ipam-subnet-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+.ipam-subnet-stats dt, .ipam-subnet-caption { font-size: .875rem; color: var(--color-gray-500); }
+.ipam-subnet-stats dd { font-size: 1.5rem; font-weight: 600; }
+.ipam-subnet-caption { margin-block: 1rem; }
+.ipam-subnet-legend { display: flex; flex-wrap: wrap; gap: 1rem; margin-block: 1rem; font-size: .875rem; }
+.ipam-subnet-legend li { display: inline-flex; align-items: center; gap: .5rem; }
+.ipam-subnet-dot { display: inline-block; width: .75rem; height: .75rem; border: 1px solid currentColor; border-radius: 50%; }
+.ipam-subnet-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(4.5rem, 1fr)); gap: .5rem; }
+.ipam-subnet-cell { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .25rem; min-height: 4rem; padding: .5rem .125rem; border: 1px solid currentColor; border-radius: .5rem; text-decoration: none; }
+.ipam-subnet-cell:not(:disabled) { cursor: pointer; }
+.ipam-subnet-cell:not(:disabled):hover { filter: brightness(.9); }
+.ipam-subnet-cell:focus-visible { outline: 3px solid var(--color-primary-500); outline-offset: 3px; }
+.ipam-subnet-address { font-size: 1rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+.ipam-subnet-status { font-size: .625rem; }
+.ipam-subnet-available { color: #047857; background: rgb(16 185 129 / 12%); }
+.ipam-subnet-assigned { color: #1d4ed8; background: rgb(59 130 246 / 12%); }
+.ipam-subnet-reserved { color: #92400e; background: rgb(245 158 11 / 12%); }
+.ipam-subnet-protected { color: #4b5563; background: rgb(107 114 128 / 12%); }
+.dark .ipam-subnet-available { color: #6ee7b7; }
+.dark .ipam-subnet-assigned { color: #93c5fd; }
+.dark .ipam-subnet-reserved { color: #fcd34d; }
+.dark .ipam-subnet-protected { color: #d1d5db; }
+.ipam-subnet-pagination { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-top: 1.5rem; font-size: .875rem; }
+@media (min-width: 640px) { .ipam-subnet-stats { grid-template-columns: repeat(4, minmax(0, 1fr)); } }

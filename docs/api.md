@@ -344,7 +344,7 @@ Content-Type: application/json
 
 **Required Fields:**
 - `name` (string, max 255): Device name
-- `type` (string): Device type
+- `type` (string, optional, max 255): A registered device type value. Built-in values are `server`, `workstation`, `laptop`, `printer`, `switch`, `router`, `firewall`, `access_point` and `other`. Custom types can be created with the **+** button beside **Type** in the device form. Reuse the stable `type` value returned for a device using that custom type; its display name is not the API value. Unknown values return HTTP 422. The same rule applies when updating a device.
 
 **Optional Fields:**
 - `description` (string): Device description

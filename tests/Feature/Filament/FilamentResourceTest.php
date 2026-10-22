@@ -2,7 +2,6 @@
 
 namespace Tests\Feature\Filament;
 
-use App\Filament\Resources\Devices\Pages\CreateDevice;
 use App\Filament\Resources\Devices\Pages\EditDevice;
 use App\Filament\Resources\Devices\Pages\ListDevices;
 use App\Filament\Resources\IpAddresses\Pages\CreateIpAddress;
@@ -59,10 +58,9 @@ class FilamentResourceTest extends TestCase
             'description' => 'Test Description',
         ];
 
-        Livewire::test(CreateDevice::class)
-            ->fillForm($deviceData)
-            ->call('create')
-            ->assertHasNoFormErrors();
+        Livewire::test(ListDevices::class)
+            ->callAction('create', data: $deviceData)
+            ->assertHasNoActionErrors();
 
         $this->assertDatabaseHas('devices', [
             'name' => 'New Test Device',
@@ -213,12 +211,9 @@ class FilamentResourceTest extends TestCase
         $user = User::factory()->create(['is_admin' => true]);
         $this->actingAs($user);
 
-        Livewire::test(CreateDevice::class)
-            ->fillForm([
-                'name' => '', // Required field empty
-            ])
-            ->call('create')
-            ->assertHasFormErrors(['name']);
+        Livewire::test(ListDevices::class)
+            ->callAction('create', data: ['name' => ''])
+            ->assertHasActionErrors(['name']);
     }
 
     /**
