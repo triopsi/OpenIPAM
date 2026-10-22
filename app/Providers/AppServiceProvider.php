@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Services\DeviceTypeService;
 use Filament\Forms\Components\Field;
 use Filament\Schemas\Components\Fieldset;
 use Filament\Schemas\Components\Grid;
@@ -16,7 +17,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->scoped(DeviceTypeService::class);
     }
 
     /**

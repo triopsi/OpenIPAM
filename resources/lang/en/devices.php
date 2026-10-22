@@ -1,6 +1,12 @@
 <?php
 
 return [
+    'custom_types' => [
+        'name' => 'Type name',
+        'create' => 'New device type',
+    ],
+    'create_modal_title' => 'New device',
+    'ip_unavailable' => 'A selected IP address is no longer available. Choose another address and try again.',
     'csv_import' => [
         'title' => 'CSV Import',
         'description' => 'Import devices with IP addresses from CSV files',

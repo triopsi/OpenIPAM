@@ -81,3 +81,21 @@ Native setup defaults to `database/database.sqlite` and Laravel's development se
 Filament discovers resources, standalone pages and widgets automatically. Keep each resource in its plural domain directory. Use `Filament\Actions\Action`, action `schema()` definitions and named schema methods such as `profileForm(Schema $schema)`; avoid the deprecated `MenuItem`, `Placeholder`, `makeForm()` and `getForms()` APIs. Keep user-facing strings in both `resources/lang/en` and `resources/lang/de`. Panel-level labels use translation closures so they resolve after the locale middleware runs.
 
 Optional demo data: `php artisan db:seed`. Inspect `database/seeders` first and use a disposable development database. Production startup never runs seeders.
+
+## Subnet grid implementation
+
+`App\Support\Network\Ipv4Subnet` normalizes IPv4 networks and performs numeric range calculations without enumerating an entire subnet. `SubnetInventoryService` streams inventory rows in batches, checks exact membership after portable whole-octet prefix filtering, and materializes at most 256 tiles per response. Missing rows are displayed as available without being inserted. Existing device links override a stale available status.
+
+The Filament `Subnets` page validates user input and passes assignment requests to the service. Grid assignments run inside a transaction, lock the device and address, recheck occupancy, and reuse `IpAssignmentService` to update primary-IP relationships. Existing record metadata is preserved. Network and broadcast endpoints are always protected from assignment through the grid, except on `/31` and `/32`. No new migration or worker is required.
+
+The page uses the existing panel authentication and access model. It does not introduce a separate permission boundary or perform network discovery. IPv6 grids are intentionally unsupported; IPv6 inventory remains available through the existing resource. For very broad networks, snapshot counting still scans matching documented IPv4 rows, but memory use is bounded by the batch and tile sizes.
+
+Regression coverage lives in `Ipv4SubnetTest`, `SubnetInventoryTest` and `SubnetGridTest`. It covers CIDR validation, legacy masks, endpoint handling, large-network bounds, occupancy counts, stale assignments, primary IPs, guest access and English/German rendering. The feature tests run against each database engine in CI. Every test method documents its behavior and an explicit `Expect:` in English PHPDoc.
+
+## Device creation dialogs
+
+The device resource registers list and edit pages; creation uses Filament's native `CreateAction` on the list. `DeviceForm` supplies shared fields, and `DeviceCreationService` saves the device and optional primary/additional IP selections in one transaction. The service locks selected addresses and rejects stale occupancy before any partial device or assignment can remain. Validation errors are displayed in the creation modal.
+
+The subnet assignment picker uses Filament's native `createOptionForm` and `createOptionUsing`. Its nested modal reuses the device fields without IP selectors, then automatically selects the created device in the parent dialog. Creating the device does not allocate the selected subnet address or another default IP. The operator completes the original assignment explicitly; cancelling the parent dialog leaves the independently created device available for later use.
+
+The shared type selector also uses native option creation. `DeviceTypeService` resolves translated built-in labels and reusable custom names, deduplicates names ignoring case, and caches custom labels within the request scope. Custom types are saved independently of devices and remain available when a device dialog is cancelled or the last matching device is deleted. Stable catalog values are stored in `devices.type`; display names are used in the table and CSV export. The catalog migration seeds built-ins and preserves existing type strings. Direct model writes and CSV imports register additional legacy values through the device's saved event. Run migrations after pulling this change; container startup already does this automatically.
