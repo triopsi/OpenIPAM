@@ -29,6 +29,7 @@ Write "None" if existing installations need no special steps.
 
 - [ ] The PR title follows Conventional Commits (e.g. `fix: correct IP assignment`).
 - [ ] The contribution comes from a dedicated branch in my fork and targets `triopsi/OpenIPAM:main`.
+- [ ] Each PHPUnit test has a PHPDoc description and an explicit `Expect:` line.
 - [ ] Tests cover changed behavior and relevant failure cases, and the affected tests pass.
 - [ ] Filament/Livewire changes cover saving, validation or authorization as applicable.
 - [ ] Modified PHP files are formatted with Laravel Pint.

@@ -1,5 +1,7 @@
 <?php
 
+use App\Support\PersistentApplicationKey;
+
 return [
 
     /*
@@ -97,7 +99,10 @@ return [
 
     'cipher' => 'AES-256-CBC',
 
-    'key' => env('APP_KEY'),
+    // Docker exec commands do not inherit variables exported by PID 1.
+    'key' => env('APP_KEY') ?: (is_file(storage_path('app.key'))
+        ? PersistentApplicationKey::getOrCreate(storage_path('app.key'))
+        : null),
 
     'previous_keys' => [
         ...array_filter(

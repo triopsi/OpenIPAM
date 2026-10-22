@@ -39,6 +39,11 @@ class IpAutoAssignmentTest extends TestCase
         ]);
     }
 
+    /**
+     * Verify service gets next available IP without group.
+     *
+     * Expect: The service returns the next available unassigned address from the fixtures.
+     */
     public function test_service_gets_next_available_ip_without_group(): void
     {
         // Erstelle verfügbare IP-Adressen
@@ -53,6 +58,11 @@ class IpAutoAssignmentTest extends TestCase
         $this->assertEquals('192.168.1.11', $nextIp->ip_address);
     }
 
+    /**
+     * Verify service gets next available IP from preferred group.
+     *
+     * Expect: The selected address belongs to the explicitly preferred group.
+     */
     public function test_service_gets_next_available_ip_from_preferred_group(): void
     {
         // Erstelle Gruppen
@@ -80,6 +90,11 @@ class IpAutoAssignmentTest extends TestCase
         $this->assertEquals($group2->id, $nextIp->group_id);
     }
 
+    /**
+     * Verify service assigns IP to device.
+     *
+     * Expect: The assignment relationship is persisted and the address status becomes assigned.
+     */
     public function test_service_assigns_ip_to_device(): void
     {
         $device = Device::factory()->create();
@@ -100,6 +115,11 @@ class IpAutoAssignmentTest extends TestCase
         $this->assertEquals('assigned', $ipAddress->status);
     }
 
+    /**
+     * Verify service unassigns IP from device.
+     *
+     * Expect: The relationship is removed and the released address status becomes available.
+     */
     public function test_service_unassigns_ip_from_device(): void
     {
         $device = Device::factory()->create();
@@ -128,6 +148,11 @@ class IpAutoAssignmentTest extends TestCase
         $this->assertEquals('available', $ipAddress->status);
     }
 
+    /**
+     * Verify service respects default group setting.
+     *
+     * Expect: The returned address belongs to the configured default group.
+     */
     public function test_service_respects_default_group_setting(): void
     {
         // Setze Standard-Gruppe
@@ -155,6 +180,11 @@ class IpAutoAssignmentTest extends TestCase
         $this->assertEquals($defaultGroup->id, $nextIp->group_id);
     }
 
+    /**
+     * Verify service returns null when auto assign disabled.
+     *
+     * Expect: Disabling automatic primary-address assignment makes the service return null.
+     */
     public function test_service_returns_null_when_auto_assign_disabled(): void
     {
         // Deaktiviere Auto-Assignment
@@ -168,6 +198,11 @@ class IpAutoAssignmentTest extends TestCase
         $this->assertNull($nextIp);
     }
 
+    /**
+     * Verify service returns null when no available ips.
+     *
+     * Expect: The service returns null when there are no available addresses.
+     */
     public function test_service_returns_null_when_no_available_ips(): void
     {
         // Nur verwendete IPs
@@ -180,6 +215,11 @@ class IpAutoAssignmentTest extends TestCase
         $this->assertNull($nextIp);
     }
 
+    /**
+     * Verify service prepares IP options grouped.
+     *
+     * Expect: Address options are grouped under their named groups or the ungrouped label.
+     */
     public function test_service_prepares_ip_options_grouped(): void
     {
         $group1 = IpAddressGroup::factory()->create(['name' => 'Servers']);

@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\Filament;
 
-use App\Filament\Resources\DeviceResource;
+use App\Filament\Resources\Devices\Pages\ListDevices;
 use App\Models\Device;
 use App\Models\IpAddress;
 use App\Models\IpAddressGroup;
@@ -24,6 +24,11 @@ class DeviceCsvExportTest extends TestCase
         $this->adminUser = User::factory()->create(['is_admin' => true]);
     }
 
+    /**
+     * Verify device CSV export bulk action exists.
+     *
+     * Expect: The device list renders successfully and exposes the csv_export bulk action.
+     */
     public function test_device_csv_export_bulk_action_exists(): void
     {
         $this->actingAs($this->adminUser);
@@ -32,11 +37,16 @@ class DeviceCsvExportTest extends TestCase
         Device::factory()->count(2)->create();
 
         // Test that the CSV export bulk action is available
-        Livewire::test(DeviceResource\Pages\ListDevices::class)
+        Livewire::test(ListDevices::class)
             ->assertSuccessful()
             ->assertTableBulkActionExists('csv_export');
     }
 
+    /**
+     * Verify device CSV export generates valid CSV.
+     *
+     * Expect: The assembled CSV contains headers, both devices, translated types and associated address data.
+     */
     public function test_device_csv_export_generates_valid_csv(): void
     {
         $this->actingAs($this->adminUser);
@@ -166,6 +176,11 @@ class DeviceCsvExportTest extends TestCase
         $this->assertStringContainsString('https://device1.test.com/admin', $csvText);
     }
 
+    /**
+     * Verify device CSV export handles empty selection.
+     *
+     * Expect: The empty device list renders and still exposes the export action.
+     */
     public function test_device_csv_export_handles_empty_selection(): void
     {
         $this->actingAs($this->adminUser);
@@ -174,11 +189,16 @@ class DeviceCsvExportTest extends TestCase
         Device::factory()->count(2)->create();
 
         // Test CSV export with empty selection should not crash
-        Livewire::test(DeviceResource\Pages\ListDevices::class)
+        Livewire::test(ListDevices::class)
             ->assertSuccessful()
             ->assertTableBulkActionExists('csv_export');
     }
 
+    /**
+     * Verify device CSV export handles devices without ips.
+     *
+     * Expect: The assembled export row contains translated fields and empty address columns.
+     */
     public function test_device_csv_export_handles_devices_without_ips(): void
     {
         $this->actingAs($this->adminUser);
@@ -223,6 +243,11 @@ class DeviceCsvExportTest extends TestCase
         $this->assertEquals('Inaktiv', $csvData[1][5]);
     }
 
+    /**
+     * Verify device CSV export filename format.
+     *
+     * Expect: The filename starts with geraete_export_, includes a timestamp and ends in .csv.
+     */
     public function test_device_csv_export_filename_format(): void
     {
         $this->actingAs($this->adminUser);
@@ -235,6 +260,11 @@ class DeviceCsvExportTest extends TestCase
         $this->assertMatchesRegularExpression('/geraete_export_\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}\.csv/', $filename);
     }
 
+    /**
+     * Mount the device list for the export-confirmation placeholder.
+     *
+     * Expect: The device list component mounts; confirmation behavior itself is not asserted by this placeholder.
+     */
     public function test_device_csv_export_requires_confirmation(): void
     {
         $this->actingAs($this->adminUser);
@@ -242,12 +272,17 @@ class DeviceCsvExportTest extends TestCase
         Device::factory()->count(2)->create();
 
         // Test that the bulk action requires confirmation
-        $component = Livewire::test(DeviceResource\Pages\ListDevices::class);
+        $component = Livewire::test(ListDevices::class);
 
         // Check if the action has confirmation requirements
         $this->assertTrue(true); // This passes as the action is configured with requiresConfirmation()
     }
 
+    /**
+     * Verify device CSV export translates enum values.
+     *
+     * Expect: Every supported type and status maps to its expected German export label.
+     */
     public function test_device_csv_export_translates_enum_values(): void
     {
         // Test type translations

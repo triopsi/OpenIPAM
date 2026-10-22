@@ -12,6 +12,11 @@ class UserTest extends TestCase
 {
     use RefreshDatabase;
 
+    /**
+     * Verify user can be created with valid attributes.
+     *
+     * Expect: The saved user retains the supplied profile values and a valid password hash.
+     */
     public function test_user_can_be_created_with_valid_attributes(): void
     {
         $user = User::create([
@@ -26,6 +31,11 @@ class UserTest extends TestCase
         $this->assertTrue(Hash::check('password', $user->password));
     }
 
+    /**
+     * Document how the model currently preserves email letter case.
+     *
+     * Expect: The uppercase email address is preserved; the current model does not lowercase it.
+     */
     public function test_user_email_is_cast_to_lowercase(): void
     {
         // Das User Model castet Email nicht automatisch zu lowercase
@@ -39,6 +49,11 @@ class UserTest extends TestCase
         $this->assertEquals('JOHN@EXAMPLE.COM', $user->email);
     }
 
+    /**
+     * Verify user gravatar URL is generated.
+     *
+     * Expect: The avatar URL uses the normalized email hash and expected Gravatar parameters.
+     */
     public function test_user_gravatar_url_is_generated(): void
     {
         $user = User::factory()->create([
@@ -53,6 +68,11 @@ class UserTest extends TestCase
         $this->assertEquals($expectedUrl, $gravatarUrl);
     }
 
+    /**
+     * Verify user gravatar URL with different types.
+     *
+     * Expect: Each configured Gravatar type produces the corresponding avatar URL.
+     */
     public function test_user_gravatar_url_with_different_types(): void
     {
         $user = User::factory()->create(['email' => 'test@example.com']);
@@ -68,6 +88,11 @@ class UserTest extends TestCase
         }
     }
 
+    /**
+     * Verify user email two factor fields.
+     *
+     * Expect: Email 2FA fields expose the enabled flag, code and a Carbon expiration value.
+     */
     public function test_user_email_two_factor_fields(): void
     {
         $user = User::factory()->create([
@@ -81,6 +106,11 @@ class UserTest extends TestCase
         $this->assertInstanceOf(Carbon::class, $user->email_two_factor_expires_at);
     }
 
+    /**
+     * Verify user has email two factor enabled.
+     *
+     * Expect: Enabled and disabled fixtures expose true and false respectively.
+     */
     public function test_user_has_email_two_factor_enabled(): void
     {
         $userWithTwoFactor = User::factory()->create([
@@ -95,6 +125,11 @@ class UserTest extends TestCase
         $this->assertFalse($userWithoutTwoFactor->email_two_factor_enabled);
     }
 
+    /**
+     * Verify user password is hashed automatically.
+     *
+     * Expect: The stored password differs from plaintext and verifies against the original password.
+     */
     public function test_user_password_is_hashed_automatically(): void
     {
         // Dieser Test würde normalerweise einen Mutator prüfen
@@ -105,6 +140,11 @@ class UserTest extends TestCase
         $this->assertTrue(Hash::check('password', $user->password));
     }
 
+    /**
+     * Verify user fillable attributes.
+     *
+     * Expect: The model exposes exactly the expected mass-assignable profile and 2FA attributes.
+     */
     public function test_user_fillable_attributes(): void
     {
         $user = new User;
@@ -122,6 +162,11 @@ class UserTest extends TestCase
         $this->assertEquals($expectedFillable, $user->getFillable());
     }
 
+    /**
+     * Verify user hidden attributes.
+     *
+     * Expect: Password, remember token and the 2FA code are marked as hidden attributes.
+     */
     public function test_user_hidden_attributes(): void
     {
         $user = User::factory()->create();
@@ -137,6 +182,11 @@ class UserTest extends TestCase
         }
     }
 
+    /**
+     * Verify user casts are applied.
+     *
+     * Expect: Password, 2FA flag and expiration use the expected string, boolean and date types.
+     */
     public function test_user_casts_are_applied(): void
     {
         $user = User::factory()->create([

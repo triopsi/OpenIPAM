@@ -21,6 +21,11 @@ class DeviceIpTreeWidgetTest extends TestCase
         $this->actingAs(User::factory()->create(['is_admin' => true]));
     }
 
+    /**
+     * Verify widget displays correct statistics.
+     *
+     * Expect: Statistics report three devices, two with IPs, one without IPs, two used addresses and one available address.
+     */
     public function test_widget_displays_correct_statistics(): void
     {
         // Erstelle Test-Daten
@@ -51,6 +56,11 @@ class DeviceIpTreeWidgetTest extends TestCase
         $this->assertEquals(1, $data['statistics']['availableIpAddresses']);
     }
 
+    /**
+     * Verify widget groups devices correctly.
+     *
+     * Expect: Named, ungrouped and addressless device groups contain the appropriate devices and counts.
+     */
     public function test_widget_groups_devices_correctly(): void
     {
         // Erstelle IP-Gruppe
@@ -97,6 +107,11 @@ class DeviceIpTreeWidgetTest extends TestCase
         $this->assertTrue($noIpData['devices']->contains('name', 'No IP Device'));
     }
 
+    /**
+     * Verify widget handles empty data.
+     *
+     * Expect: All device counts are zero and the grouped data collection is empty.
+     */
     public function test_widget_handles_empty_data(): void
     {
         $widget = new DeviceIpTreeWidget;
@@ -108,6 +123,11 @@ class DeviceIpTreeWidgetTest extends TestCase
         $this->assertEmpty($data['groupedData']);
     }
 
+    /**
+     * Verify widget handles devices with multiple ips.
+     *
+     * Expect: One device with two addresses is counted once while both used addresses are counted.
+     */
     public function test_widget_handles_devices_with_multiple_ips(): void
     {
         $device = Device::factory()->create(['name' => 'Multi IP Device']);
@@ -138,6 +158,11 @@ class DeviceIpTreeWidgetTest extends TestCase
         $this->assertEquals(2, $device->ipAddresses->count());
     }
 
+    /**
+     * Verify widget is accessible by admin.
+     *
+     * Expect: The widget reports that it can be viewed by the authenticated admin fixture.
+     */
     public function test_widget_is_accessible_by_admin(): void
     {
         $this->assertTrue(DeviceIpTreeWidget::canView());

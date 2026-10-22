@@ -13,6 +13,11 @@ class NetworkDiscoveryTest extends TestCase
 {
     use RefreshDatabase;
 
+    /**
+     * Exercise address assignments for simulated network-discovery results.
+     *
+     * Expect: Simulated discovery leaves three assigned addresses, two available addresses and three linked devices.
+     */
     public function test_network_scan_can_discover_active_devices(): void
     {
         $user = User::factory()->create();
@@ -61,6 +66,11 @@ class NetworkDiscoveryTest extends TestCase
         $this->assertEquals(3, $devicesWithIps);
     }
 
+    /**
+     * Verify duplicate MAC address detection.
+     *
+     * Expect: The duplicate-MAC query finds both devices and preserves their expected ordering.
+     */
     public function test_duplicate_mac_address_detection(): void
     {
         $user = User::factory()->create();
@@ -95,6 +105,11 @@ class NetworkDiscoveryTest extends TestCase
         $this->assertEquals('device2', $duplicates->last()->hostname);
     }
 
+    /**
+     * Verify subnet utilization calculation.
+     *
+     * Expect: Six assigned addresses out of ten produce sixty percent utilization.
+     */
     public function test_subnet_utilization_calculation(): void
     {
         $user = User::factory()->create();
@@ -129,6 +144,11 @@ class NetworkDiscoveryTest extends TestCase
         $this->assertEquals(60.0, $utilizationPercent);
     }
 
+    /**
+     * Verify device ping status tracking.
+     *
+     * Expect: Simulated successful and failed pings update status and preserve a last-seen timestamp.
+     */
     public function test_device_ping_status_tracking(): void
     {
         $user = User::factory()->create();
@@ -160,6 +180,11 @@ class NetworkDiscoveryTest extends TestCase
         $this->assertEquals('inactive', $device->fresh()->status);
     }
 
+    /**
+     * Verify network topology relationships.
+     *
+     * Expect: The fixtures group into one router, two switches and two computer endpoints.
+     */
     public function test_network_topology_relationships(): void
     {
         $user = User::factory()->create();

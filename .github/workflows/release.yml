@@ -66,28 +66,24 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Optional Docker Hub login
-        if: vars.DOCKERHUB_USERNAME != ''
+      - name: Docker Hub login
         uses: docker/login-action@v4
         with:
-          username: ${{ vars.DOCKERHUB_USERNAME }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Image names
         id: names
         env:
           REPOSITORY: ${{ github.repository }}
           VERSION: ${{ env.RELEASE_VERSION }}
-          DOCKERHUB_USERNAME: ${{ vars.DOCKERHUB_USERNAME }}
         run: |
           repo="${REPOSITORY,,}"
           {
             echo 'tags<<EOF'
             echo "ghcr.io/$repo:$VERSION"
             echo "ghcr.io/$repo:latest"
-            if [ -n "$DOCKERHUB_USERNAME" ]; then
-              echo "$DOCKERHUB_USERNAME/openipam:$VERSION"
-              echo "$DOCKERHUB_USERNAME/openipam:latest"
-            fi
+            echo "triopsi/openipam:$VERSION"
+            echo "triopsi/openipam:latest"
             echo 'EOF'
           } >> "$GITHUB_OUTPUT"
       - uses: docker/build-push-action@v7

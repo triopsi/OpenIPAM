@@ -39,6 +39,8 @@ class IpAddressControllerTest extends TestCase
     /**
      * Test listing IP addresses.
      *
+     * Expect: HTTP 200 returns the address collection and pagination metadata.
+     *
      * @return void
      */
     public function test_can_list_ip_addresses()
@@ -71,6 +73,8 @@ class IpAddressControllerTest extends TestCase
 
     /**
      * Test creating an IP address.
+     *
+     * Expect: HTTP 201 returns the address and persists its supplied attributes.
      *
      * @return void
      */
@@ -108,6 +112,8 @@ class IpAddressControllerTest extends TestCase
     /**
      * Test creating IP address with validation errors.
      *
+     * Expect: HTTP 422 reports invalid IP-address input.
+     *
      * @return void
      */
     public function test_cannot_create_ip_address_with_invalid_data()
@@ -124,6 +130,8 @@ class IpAddressControllerTest extends TestCase
 
     /**
      * Test creating duplicate IP address.
+     *
+     * Expect: HTTP 422 rejects an IP address that already exists.
      *
      * @return void
      */
@@ -142,6 +150,8 @@ class IpAddressControllerTest extends TestCase
 
     /**
      * Test showing a specific IP address.
+     *
+     * Expect: HTTP 200 returns the requested IP-address record.
      *
      * @return void
      */
@@ -165,6 +175,8 @@ class IpAddressControllerTest extends TestCase
 
     /**
      * Test updating an IP address.
+     *
+     * Expect: HTTP 200 returns the changed attributes and persists the update.
      *
      * @return void
      */
@@ -200,6 +212,8 @@ class IpAddressControllerTest extends TestCase
     /**
      * Test deleting an IP address.
      *
+     * Expect: HTTP 200 confirms deletion and removes the address record.
+     *
      * @return void
      */
     public function test_can_delete_ip_address()
@@ -221,6 +235,8 @@ class IpAddressControllerTest extends TestCase
 
     /**
      * Test filtering IP addresses by type.
+     *
+     * Expect: When enabled, only the two IPv4 fixtures should match the version filter; this test is currently skipped.
      *
      * @return void
      */
@@ -251,6 +267,8 @@ class IpAddressControllerTest extends TestCase
     /**
      * Test searching IP addresses.
      *
+     * Expect: The search returns the two matching IP-address fixtures.
+     *
      * @return void
      */
     public function test_can_search_ip_addresses()
@@ -270,6 +288,8 @@ class IpAddressControllerTest extends TestCase
 
     /**
      * Test filtering available IP addresses.
+     *
+     * Expect: Only the available address is returned by the availability filter.
      *
      * @return void
      */
@@ -302,6 +322,8 @@ class IpAddressControllerTest extends TestCase
 
     /**
      * Test bulk creating IP addresses from CIDR.
+     *
+     * Expect: The CIDR request succeeds and persists the expected usable addresses.
      *
      * @return void
      */
@@ -339,6 +361,8 @@ class IpAddressControllerTest extends TestCase
     /**
      * Test bulk creating with exclusions.
      *
+     * Expect: Excluded addresses are omitted, leaving two records in the database.
+     *
      * @return void
      */
     public function test_bulk_create_with_exclusions()
@@ -359,6 +383,8 @@ class IpAddressControllerTest extends TestCase
 
     /**
      * Test bulk updating IP addresses.
+     *
+     * Expect: The selected address records receive the requested bulk-update values.
      *
      * @return void
      */
@@ -404,6 +430,8 @@ class IpAddressControllerTest extends TestCase
     /**
      * Test IP address pagination.
      *
+     * Expect: Page one contains ten addresses and metadata reports twenty-five total records.
+     *
      * @return void
      */
     public function test_ip_addresses_pagination()
@@ -436,6 +464,8 @@ class IpAddressControllerTest extends TestCase
     /**
      * Test sorting IP addresses.
      *
+     * Expect: Address sorting returns the three fixtures in ascending address order.
+     *
      * @return void
      */
     public function test_can_sort_ip_addresses()
@@ -460,6 +490,8 @@ class IpAddressControllerTest extends TestCase
 
     /**
      * Test unauthorized access.
+     *
+     * Expect: A guest IP-address request returns HTTP 401.
      *
      * @return void
      */

@@ -13,6 +13,11 @@ class IpAddressManagementTest extends TestCase
 {
     use RefreshDatabase;
 
+    /**
+     * Verify IP address can be assigned to device.
+     *
+     * Expect: The device has one address relationship containing the assigned IP.
+     */
     public function test_ip_address_can_be_assigned_to_device(): void
     {
         $user = User::factory()->create();
@@ -28,6 +33,11 @@ class IpAddressManagementTest extends TestCase
         $this->assertEquals('192.168.1.10', $device->ipAddresses->first()->ip_address);
     }
 
+    /**
+     * Verify multiple IP addresses can be assigned to device.
+     *
+     * Expect: All three address relationships exist and the designated primary address is returned.
+     */
     public function test_multiple_ip_addresses_can_be_assigned_to_device(): void
     {
         $user = User::factory()->create();
@@ -49,6 +59,11 @@ class IpAddressManagementTest extends TestCase
         $this->assertEquals($primaryIp->ip_address, $device->primaryIpAddress()->ip_address);
     }
 
+    /**
+     * Verify IP address status changes when assigned.
+     *
+     * Expect: The assigned address reports assigned status and is no longer available.
+     */
     public function test_ip_address_status_changes_when_assigned(): void
     {
         $user = User::factory()->create();
@@ -68,6 +83,11 @@ class IpAddressManagementTest extends TestCase
         $this->assertFalse($ipAddress->fresh()->isAvailable());
     }
 
+    /**
+     * Verify IP address can be unassigned from device.
+     *
+     * Expect: The relationship is removed and the address becomes available again.
+     */
     public function test_ip_address_can_be_unassigned_from_device(): void
     {
         $user = User::factory()->create();
@@ -88,6 +108,11 @@ class IpAddressManagementTest extends TestCase
         $this->assertTrue($ipAddress->fresh()->isAvailable());
     }
 
+    /**
+     * Verify IP address groups can organize addresses.
+     *
+     * Expect: Both addresses belong to the VLAN group and its relationship contains two records.
+     */
     public function test_ip_address_groups_can_organize_addresses(): void
     {
         $user = User::factory()->create();
@@ -113,6 +138,11 @@ class IpAddressManagementTest extends TestCase
         $this->assertCount(2, $vlanGroup->ipAddresses);
     }
 
+    /**
+     * Verify bulk IP creation in subnet.
+     *
+     * Expect: Six address records are created for the inclusive .10 through .15 range.
+     */
     public function test_bulk_ip_creation_in_subnet(): void
     {
         $user = User::factory()->create();
@@ -140,6 +170,11 @@ class IpAddressManagementTest extends TestCase
         $this->assertEquals('192.168.1.15', $createdIps[5]->ip_address);
     }
 
+    /**
+     * Verify IP address search and filtering.
+     *
+     * Expect: Availability, subnet and assigned-status queries return the expected record counts.
+     */
     public function test_ip_address_search_and_filtering(): void
     {
         $user = User::factory()->create();
@@ -162,6 +197,11 @@ class IpAddressManagementTest extends TestCase
         $this->assertCount(1, $usedIps);
     }
 
+    /**
+     * Inspect relationship state after assigning an address to one device.
+     *
+     * Expect: The first device's address is assigned and no relationship exists for the second device.
+     */
     public function test_ip_conflict_prevention(): void
     {
         $user = User::factory()->create();
@@ -185,6 +225,11 @@ class IpAddressManagementTest extends TestCase
         $this->assertEquals('assigned', $ipAddress->fresh()->status);
     }
 
+    /**
+     * Verify IPv6 addresses are supported.
+     *
+     * Expect: The device's primary address is 2001:db8::1 with IP version 6.
+     */
     public function test_ipv6_addresses_are_supported(): void
     {
         $user = User::factory()->create();

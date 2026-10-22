@@ -20,9 +20,9 @@ Route::get('/admin/email-2fa', EmailTwoFactorChallenge::class)
 // Language switching route
 Route::post('/language', function (Request $request) {
     $language = $request->input('language');
-    $supportedLocales = ['en', 'de'];
+    $supportedLocales = array_keys(config('languages.supported'));
 
-    if (in_array($language, $supportedLocales)) {
+    if (is_string($language) && in_array($language, $supportedLocales, true)) {
         // Store in session
         $request->session()->put('locale', $language);
 

@@ -11,6 +11,11 @@ class DeviceTest extends TestCase
 {
     use RefreshDatabase;
 
+    /**
+     * Verify device can be created with valid attributes.
+     *
+     * Expect: The saved device retains the supplied name, hostname, MAC address, type and status.
+     */
     public function test_device_can_be_created_with_valid_attributes(): void
     {
         $device = Device::create([
@@ -31,6 +36,11 @@ class DeviceTest extends TestCase
         $this->assertEquals('active', $device->status);
     }
 
+    /**
+     * Verify device has fillable attributes.
+     *
+     * Expect: The model exposes exactly the expected mass-assignable device attributes.
+     */
     public function test_device_has_fillable_attributes(): void
     {
         $device = new Device;
@@ -48,6 +58,11 @@ class DeviceTest extends TestCase
         $this->assertEquals($fillable, $device->getFillable());
     }
 
+    /**
+     * Verify device can have multiple IP addresses.
+     *
+     * Expect: Both attached addresses are returned by the device relationship.
+     */
     public function test_device_can_have_multiple_ip_addresses(): void
     {
         $device = Device::factory()->create();
@@ -62,6 +77,11 @@ class DeviceTest extends TestCase
         $this->assertTrue($device->ipAddresses->contains($ip2));
     }
 
+    /**
+     * Verify device can get primary IP address.
+     *
+     * Expect: The accessor returns the address whose relationship is marked primary.
+     */
     public function test_device_can_get_primary_ip_address(): void
     {
         $device = Device::factory()->create();
@@ -78,6 +98,11 @@ class DeviceTest extends TestCase
         $this->assertEquals('192.168.1.10', $retrievedPrimaryIp->ip_address);
     }
 
+    /**
+     * Verify device can have no primary IP address.
+     *
+     * Expect: The primary-address accessor returns null when no address is marked primary.
+     */
     public function test_device_can_have_no_primary_ip_address(): void
     {
         $device = Device::factory()->create();
@@ -90,6 +115,11 @@ class DeviceTest extends TestCase
         $this->assertNull($primaryIp);
     }
 
+    /**
+     * Verify device relationship with IP addresses includes pivot data.
+     *
+     * Expect: The address relationship exposes its primary flag and pivot timestamps.
+     */
     public function test_device_relationship_with_ip_addresses_includes_pivot_data(): void
     {
         $device = Device::factory()->create();
@@ -108,6 +138,11 @@ class DeviceTest extends TestCase
         $this->assertNotNull($attachedIp->pivot->updated_at);
     }
 
+    /**
+     * Verify device MAC address format validation.
+     *
+     * Expect: Every supported MAC-address fixture is stored unchanged.
+     */
     public function test_device_mac_address_format_validation(): void
     {
         // Diese Test würde normalerweise eine Validierung prüfen,

@@ -59,6 +59,8 @@ jobs:
       - run: composer validate --strict
       - run: composer install --no-interaction --prefer-dist
       - run: vendor/bin/pint --test
+      - name: Check PHPUnit test documentation
+        run: composer test:docs
       - run: npm ci
       - run: npm run lint-js
       - run: npm run build
@@ -166,11 +168,10 @@ jobs:
           cache-to: type=gha,mode=max
       - name: Start image with persistent SQLite storage
         run: |
-          app_key="base64:$(openssl rand -base64 32)"
           docker run -d --name openipam-ci -p 127.0.0.1:8080:8080 \
-            -e APP_KEY="$app_key" -e APP_URL=http://localhost:8080 \
+            -e APP_URL=http://localhost:8080 \
             -e DB_CONNECTION=sqlite -e DB_DATABASE=/var/www/html/storage/database.sqlite \
-            -e AUTO_MIGRATE=true -e QUEUE_CONNECTION=sync \
+            -e QUEUE_CONNECTION=sync \
             -v openipam-ci-storage:/var/www/html/storage openipam:ci
           for attempt in $(seq 1 30); do
             echo "Health check $attempt/30"
@@ -178,6 +179,22 @@ jobs:
             sleep 2
           done
           docker logs openipam-ci
+          exit 1
+      - name: Verify installer, stored key and restart
+        run: |
+          curl -fsS http://localhost:8080/admin/register -o /tmp/openipam-installer.html
+          grep -q 'Welcome to OpenIPAM' /tmp/openipam-installer.html
+          docker exec openipam-ci test -s storage/app.key
+          key_hash="$(docker exec openipam-ci sha256sum storage/app.key)"
+          docker restart openipam-ci
+          for attempt in $(seq 1 30); do
+            echo "Restart health check $attempt/30"
+            if curl -fsS http://localhost:8080/up; then
+              test "$key_hash" = "$(docker exec openipam-ci sha256sum storage/app.key)"
+              exit 0
+            fi
+            sleep 2
+          done
           exit 1
       - name: Show container logs
         if: failure()

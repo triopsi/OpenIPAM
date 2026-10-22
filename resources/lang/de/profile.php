@@ -1,6 +1,12 @@
 <?php
 
 return [
+    'tabs' => [
+        'account' => 'Konto',
+        'password' => 'Passwort',
+        'security' => 'Zwei-Faktor-Authentifizierung',
+    ],
+    'back_to_dashboard' => 'Zurück zur Übersicht',
     'title' => 'Profil',
     'personal_data' => 'Persönliche Daten',
     'change_password' => 'Passwort ändern',
@@ -24,4 +30,18 @@ return [
     '2fa_disabled_success' => 'Zwei-Faktor-Authentifizierung erfolgreich deaktiviert.',
     'invalid_code' => 'Ungültiger Verifizierungscode.',
     'code_expired' => 'Verifizierungscode ist abgelaufen.',
+    'save_profile' => 'Profil speichern',
+    'verify' => 'Verifizieren',
+    'two_factor_description' => 'Schützen Sie Ihr Konto mit einem Code, der per E-Mail gesendet wird.',
+    'enabled' => '✓ Aktiviert',
+    'disabled' => '✗ Deaktiviert',
+    'enabled_title' => 'Zwei-Faktor-Authentifizierung aktiviert',
+    'disabled_title' => 'Zwei-Faktor-Authentifizierung deaktiviert',
+    'code_sent_title' => 'Code gesendet',
+    'invalid_code_title' => 'Ungültiger Code',
+    'invalid_or_expired_code' => 'Der Code ist ungültig oder abgelaufen.',
+    'enable' => 'Aktivieren',
+    'disable' => 'Deaktivieren',
+    'disable_confirmation' => 'Wir senden Ihnen einen Verifizierungscode per E-Mail, um die Deaktivierung zu bestätigen.',
+    'enable_confirmation' => 'Nach der Aktivierung erhalten Sie bei jeder Anmeldung einen Code per E-Mail.',
 ];

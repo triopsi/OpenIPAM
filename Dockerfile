@@ -44,7 +44,8 @@ RUN npm run build
 
 FROM base AS production
 ARG APP_VERSION=dev
-ENV APP_ENV=production APP_DEBUG=false LOG_CHANNEL=stderr APP_VERSION=${APP_VERSION}
+ENV APP_ENV=production APP_DEBUG=false LOG_CHANNEL=stderr APP_VERSION=${APP_VERSION} \
+    DB_CONNECTION=sqlite DB_DATABASE=/var/www/html/storage/database.sqlite QUEUE_CONNECTION=sync
 RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini" \
     && echo 'opcache.validate_timestamps=0' > "$PHP_INI_DIR/conf.d/zz-opcache.ini"
 COPY --from=dependencies /var/www/html .

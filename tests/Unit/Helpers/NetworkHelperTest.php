@@ -6,6 +6,11 @@ use Tests\TestCase;
 
 class NetworkHelperTest extends TestCase
 {
+    /**
+     * Verify IPv4 validation.
+     *
+     * Expect: All valid IPv4 fixtures are accepted and every invalid fixture is rejected.
+     */
     public function test_ipv4_validation(): void
     {
         $validIps = [
@@ -35,6 +40,11 @@ class NetworkHelperTest extends TestCase
         }
     }
 
+    /**
+     * Verify IPv6 validation.
+     *
+     * Expect: Valid IPv6 fixtures are accepted while malformed values and IPv4 input are rejected.
+     */
     public function test_ipv6_validation(): void
     {
         $validIps = [
@@ -62,6 +72,11 @@ class NetworkHelperTest extends TestCase
         }
     }
 
+    /**
+     * Verify MAC address validation.
+     *
+     * Expect: The MAC pattern accepts supported colon and hyphen formats and rejects malformed fixtures.
+     */
     public function test_mac_address_validation(): void
     {
         $validMacs = [
@@ -92,6 +107,11 @@ class NetworkHelperTest extends TestCase
         }
     }
 
+    /**
+     * Verify subnet calculations.
+     *
+     * Expect: Each tested CIDR prefix converts to the expected dotted-decimal netmask.
+     */
     public function test_subnet_calculations(): void
     {
         // Test CIDR to netmask conversion
@@ -110,6 +130,11 @@ class NetworkHelperTest extends TestCase
         }
     }
 
+    /**
+     * Verify IP range calculations.
+     *
+     * Expect: The subnet check accepts an in-range address and rejects an address outside the range.
+     */
     public function test_ip_range_calculations(): void
     {
         // Test if IP is in range
@@ -133,6 +158,11 @@ class NetworkHelperTest extends TestCase
         $this->assertFalse($isOutsideRange, "IP {$outsideIp} should NOT be in network {$network}/{$cidr}");
     }
 
+    /**
+     * Verify hostname validation.
+     *
+     * Expect: Valid hostname fixtures pass the checks and invalid length or character cases are rejected.
+     */
     public function test_hostname_validation(): void
     {
         $validHostnames = [
@@ -193,6 +223,11 @@ class NetworkHelperTest extends TestCase
         }
     }
 
+    /**
+     * Verify port range validation.
+     *
+     * Expect: Ports from 1 through 65535 are accepted and out-of-range fixtures are rejected.
+     */
     public function test_port_range_validation(): void
     {
         $validPorts = [1, 80, 443, 3306, 8080, 65535];

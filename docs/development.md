@@ -7,8 +7,9 @@ The root Dockerfile provides `development` and `production` targets. `compose.ya
 ```sh
 docker compose up -d --build
 docker compose exec app sh scripts/dev-setup.sh
-docker compose exec app php artisan user:create
 ```
+
+Open the app and use the first-account installer if the database has no users. `php artisan user:create` remains an optional console alternative.
 
 Setup preserves an existing `.env` and application key, installs locked PHP/npm dependencies, runs pending migrations and builds assets. It does not seed demo accounts. The local `.env` is never committed or copied into a production image. Container environment variables take precedence over `.env` values; the development database credentials are local examples.
 
@@ -37,7 +38,7 @@ An existing container-side `.ssh` directory is preserved. If you change keys on 
 
 ```sh
 docker compose exec app npm run dev
-docker compose exec app composer test
+docker compose exec -e DB_CONNECTION=sqlite -e DB_DATABASE=:memory: app composer test
 docker compose exec app composer lint
 docker compose exec app npm run lint-js
 docker compose exec app npm run build
@@ -45,7 +46,7 @@ docker compose exec app npm run build
 
 The Vite server listens on container port 5173. Compose maps it to host port 9517 and passes `VITE_PORT` to configure the browser HMR connection. Stop Vite before using built assets; if a terminated watcher leaves `public/hot`, remove that file.
 
-Format PHP with `composer lint:fix`. Run individual tests with `php artisan test --filter=DeviceManagementTest`. Tests use an in-memory SQLite database unless `DB_CONNECTION` and `DB_DATABASE` are explicitly supplied by the process. Always use a disposable database when overriding these variables: `RefreshDatabase` recreates tables.
+Format PHP with `composer lint:fix`. Run individual tests inside the container with `DB_CONNECTION=sqlite DB_DATABASE=:memory: php artisan test --filter=DeviceManagementTest`. Tests use an in-memory SQLite database unless `DB_CONNECTION` and `DB_DATABASE` are explicitly supplied by the process. Always use a disposable database when overriding these variables: `RefreshDatabase` recreates tables.
 
 CI runs PHP 8.4/8.5 tests, the full suite on PostgreSQL/MariaDB, migration rollback checks, Pint, ESLint, asset compilation, dependency audits and a production-image smoke test. Release publication waits for these checks. Workflow jobs do not install additional analysis packages or rewrite dependency manifests.
 
@@ -57,7 +58,6 @@ On a fresh clone:
 
 ```sh
 sh scripts/dev-setup.sh
-php artisan user:create
 composer dev
 ```
 
@@ -67,12 +67,17 @@ Native setup defaults to `database/database.sqlite` and Laravel's development se
 
 | Path | Responsibility |
 | --- | --- |
-| `app/Filament` | Panel resources, pages and widgets |
+| `app/Filament/Resources/{Devices,IpAddresses,IpAddressGroups,Users,Settings}` | Domain resources with their own `Pages` and `RelationManagers` |
+| `app/Filament/Auth` | Sign-in, first-account registration and the standalone tabbed profile |
+| `app/Filament/Pages`, `app/Filament/Widgets` | Standalone pages and dashboard widgets |
+| `app/Providers/Filament/AdminPanelProvider.php` | Panel discovery, translated navigation and middleware |
 | `app/Http/Controllers/Api/V1` | REST API |
 | `app/Services` | IP assignment logic |
 | `resources/views` | Blade templates |
 | `resources/lang` | English and German translations |
 | `tests/Feature`, `tests/Unit` | PHPUnit coverage |
 | `.docker`, `.devcontainer`, `.github` | Runtime, workspace and automation |
+
+Filament discovers resources, standalone pages and widgets automatically. Keep each resource in its plural domain directory. Use `Filament\Actions\Action`, action `schema()` definitions and named schema methods such as `profileForm(Schema $schema)`; avoid the deprecated `MenuItem`, `Placeholder`, `makeForm()` and `getForms()` APIs. Keep user-facing strings in both `resources/lang/en` and `resources/lang/de`. Panel-level labels use translation closures so they resolve after the locale middleware runs.
 
 Optional demo data: `php artisan db:seed`. Inspect `database/seeders` first and use a disposable development database. Production startup never runs seeders.

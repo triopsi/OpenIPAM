@@ -45,6 +45,8 @@ class ApiIntegrationTest extends TestCase
     /**
      * Test complete device and IP management workflow.
      *
+     * Expect: The API creates, assigns, updates, unassigns and deletes the workflow's resources successfully.
+     *
      * @return void
      */
     public function test_complete_device_and_ip_workflow()
@@ -163,6 +165,8 @@ class ApiIntegrationTest extends TestCase
     /**
      * Test API authentication flow.
      *
+     * Expect: A new token grants access, and revoked or logged-out tokens return HTTP 401.
+     *
      * @return void
      */
     public function test_api_authentication_flow()
@@ -254,6 +258,8 @@ class ApiIntegrationTest extends TestCase
     /**
      * Test API error handling and validation.
      *
+     * Expect: Missing resources return HTTP 404 and invalid device input returns HTTP 422.
+     *
      * @return void
      */
     public function test_api_error_handling()
@@ -277,6 +283,8 @@ class ApiIntegrationTest extends TestCase
 
     /**
      * Test API pagination and filtering across resources.
+     *
+     * Expect: Pagination metadata is returned and server filtering contains only server devices.
      *
      * @return void
      */
@@ -333,7 +341,9 @@ class ApiIntegrationTest extends TestCase
     }
 
     /**
-     * Test API rate limiting (basic test).
+     * Exercise a burst of consecutive authenticated API requests.
+     *
+     * Expect: All ten consecutive authenticated requests return HTTP 200; throttling is not asserted.
      *
      * @return void
      */
@@ -359,6 +369,8 @@ class ApiIntegrationTest extends TestCase
 
     /**
      * Test API CORS headers and JSON responses.
+     *
+     * Expect: Successful read and create responses expose the expected JSON structure and content type.
      *
      * @return void
      */

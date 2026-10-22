@@ -39,6 +39,8 @@ class DeviceControllerTest extends TestCase
     /**
      * Test listing devices.
      *
+     * Expect: HTTP 200 returns the device collection with pagination metadata.
+     *
      * @return void
      */
     public function test_can_list_devices()
@@ -70,6 +72,8 @@ class DeviceControllerTest extends TestCase
 
     /**
      * Test creating a device.
+     *
+     * Expect: HTTP 201 returns the new device and saves the supplied attributes.
      *
      * @return void
      */
@@ -105,6 +109,8 @@ class DeviceControllerTest extends TestCase
     /**
      * Test creating device with validation errors.
      *
+     * Expect: HTTP 422 reports invalid name and type input.
+     *
      * @return void
      */
     public function test_cannot_create_device_with_invalid_data()
@@ -121,6 +127,8 @@ class DeviceControllerTest extends TestCase
 
     /**
      * Test showing a specific device.
+     *
+     * Expect: HTTP 200 returns the requested device's attributes.
      *
      * @return void
      */
@@ -145,6 +153,8 @@ class DeviceControllerTest extends TestCase
     /**
      * Test showing non-existent device.
      *
+     * Expect: An unknown device ID returns HTTP 404.
+     *
      * @return void
      */
     public function test_cannot_show_nonexistent_device()
@@ -157,6 +167,8 @@ class DeviceControllerTest extends TestCase
 
     /**
      * Test updating a device.
+     *
+     * Expect: HTTP 200 returns the updated values and persists them in the database.
      *
      * @return void
      */
@@ -193,6 +205,8 @@ class DeviceControllerTest extends TestCase
     /**
      * Test deleting a device.
      *
+     * Expect: HTTP 200 confirms deletion and removes the device record.
+     *
      * @return void
      */
     public function test_can_delete_device()
@@ -214,6 +228,8 @@ class DeviceControllerTest extends TestCase
 
     /**
      * Test filtering devices by type.
+     *
+     * Expect: Only the two server fixtures are returned by the type filter.
      *
      * @return void
      */
@@ -239,6 +255,8 @@ class DeviceControllerTest extends TestCase
     /**
      * Test searching devices.
      *
+     * Expect: The search returns the two matching server devices.
+     *
      * @return void
      */
     public function test_can_search_devices()
@@ -258,6 +276,8 @@ class DeviceControllerTest extends TestCase
 
     /**
      * Test device pagination.
+     *
+     * Expect: Page one contains ten records and metadata reports twenty-five total devices.
      *
      * @return void
      */
@@ -291,6 +311,8 @@ class DeviceControllerTest extends TestCase
     /**
      * Test assigning IP to device.
      *
+     * Expect: HTTP 200 confirms assignment and persists the device-address relationship.
+     *
      * @return void
      */
     public function test_can_assign_ip_to_device()
@@ -319,6 +341,8 @@ class DeviceControllerTest extends TestCase
 
     /**
      * Test unassigning IP from device.
+     *
+     * Expect: HTTP 200 confirms removal and deletes the device-address relationship.
      *
      * @return void
      */
@@ -350,6 +374,8 @@ class DeviceControllerTest extends TestCase
     /**
      * Test unauthorized access.
      *
+     * Expect: A guest device request returns HTTP 401.
+     *
      * @return void
      */
     public function test_unauthorized_access_denied()
@@ -361,6 +387,8 @@ class DeviceControllerTest extends TestCase
 
     /**
      * Test device sorting.
+     *
+     * Expect: Ascending and descending name sorting place the appropriate device first.
      *
      * @return void
      */
