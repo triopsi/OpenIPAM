@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\IpAddressResource\Pages;
 
 use App\Filament\Resources\IpAddressResource;
-use Filament\Actions;
+use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 
 class EditIpAddress extends EditRecord
@@ -13,7 +13,7 @@ class EditIpAddress extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make(),
+            DeleteAction::make(),
         ];
     }
 }

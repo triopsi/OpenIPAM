@@ -3,11 +3,25 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\UserResource\Pages;
+use App\Filament\Resources\UserResource\Pages\CreateUser;
+use App\Filament\Resources\UserResource\Pages\EditUser;
+use App\Filament\Resources\UserResource\Pages\ListUsers;
 use App\Models\User;
-use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\ImageColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Hash;
@@ -20,17 +34,17 @@ use Illuminate\Support\Facades\Hash;
  * navigation settings. Intended to centralize UI and authorization logic
  * for creating, viewing, editing, and deleting users.
  *
- * @see \App\Models\User
+ * @see User
  */
 class UserResource extends Resource
 {
     protected static ?string $model = User::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-users';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-users';
 
     protected static ?string $navigationLabel = null;
 
-    protected static ?string $navigationGroup = null;
+    protected static string|\UnitEnum|null $navigationGroup = null;
 
     protected static ?string $modelLabel = null;
 
@@ -64,26 +78,26 @@ class UserResource extends Resource
      * This static method should define the form schema (fields, sections, validation, default values,
      * visibility rules, and other form state) that Filament will render for the resource.
      *
-     * @param  Form  $form  The base Filament form instance to configure.
-     * @return Form The configured Filament form instance ready for rendering.
+     * @param  Schema  $schema  The base Filament form instance to configure.
+     * @return Schema The configured Filament form instance ready for rendering.
      */
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Section::make(__('users.sections.user_information'))
+        return $schema
+            ->components([
+                Section::make(__('users.sections.user_information'))
                     ->schema([
-                        Forms\Components\TextInput::make('name')
+                        TextInput::make('name')
                             ->label(__('users.fields.name'))
                             ->required()
                             ->maxLength(255),
-                        Forms\Components\TextInput::make('email')
+                        TextInput::make('email')
                             ->label(__('users.fields.email'))
                             ->email()
                             ->required()
                             ->unique(ignoreRecord: true)
                             ->maxLength(255),
-                        Forms\Components\Select::make('gravatar_type')
+                        Select::make('gravatar_type')
                             ->label(__('users.fields.gravatar_type'))
                             ->options([
                                 'mp' => __('users.gravatar_types.mystery_person'),
@@ -97,9 +111,9 @@ class UserResource extends Resource
                             ->default('mp'),
                     ])->columns(2),
 
-                Forms\Components\Section::make(__('users.sections.password'))
+                Section::make(__('users.sections.password'))
                     ->schema([
-                        Forms\Components\TextInput::make('password')
+                        TextInput::make('password')
                             ->label(__('users.fields.password'))
                             ->password()
                             ->required(fn (string $context): bool => $context === 'create')
@@ -113,9 +127,9 @@ class UserResource extends Resource
                             ),
                     ]),
 
-                Forms\Components\Section::make(__('users.sections.additional_information'))
+                Section::make(__('users.sections.additional_information'))
                     ->schema([
-                        Forms\Components\Toggle::make('email_two_factor_enabled')
+                        Toggle::make('email_two_factor_enabled')
                             ->label(__('users.fields.two_factor_auth'))
                             ->helperText(__('users.helpers.two_factor_help'))
                             ->visible(fn (string $context): bool => $context === 'edit')
@@ -138,29 +152,29 @@ class UserResource extends Resource
      * Define the table's columns, filters, actions, bulk actions, default sorting,
      * pagination, and any other table-related settings for the Filament resource.
      *
-     * @param  \Filament\Tables\Table  $table  The table instance to configure.
-     * @return \Filament\Tables\Table The configured table instance.
+     * @param  Table  $table  The table instance to configure.
+     * @return Table The configured table instance.
      */
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
-                Tables\Columns\ImageColumn::make('gravatar_url')
+                ImageColumn::make('gravatar_url')
                     ->label(__('users.table.avatar'))
                     ->circular()
                     ->defaultImageUrl(fn ($record) => $record->gravatar_url)
                     ->size(40),
-                Tables\Columns\TextColumn::make('name')
+                TextColumn::make('name')
                     ->label(__('users.table.name'))
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('email')
+                TextColumn::make('email')
                     ->label(__('users.table.email'))
                     ->searchable()
                     ->sortable()
                     ->copyable()
                     ->copyMessage(__('users.table.email_copied')),
-                Tables\Columns\IconColumn::make('email_two_factor_enabled')
+                IconColumn::make('email_two_factor_enabled')
                     ->label(__('users.table.two_factor'))
                     ->boolean()
                     ->sortable()
@@ -170,30 +184,30 @@ class UserResource extends Resource
                             ? __('users.table.two_factor_enabled')
                             : __('users.table.two_factor_disabled')
                     ),
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->label(__('users.table.created_at'))
                     ->dateTime('d.m.Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
+                TextColumn::make('updated_at')
                     ->label(__('users.table.updated_at'))
                     ->dateTime('d.m.Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\Filter::make('two_factor')
+                Filter::make('two_factor')
                     ->label(__('users.filters.two_factor_only'))
                     ->query(fn (Builder $query): Builder => $query->where('email_two_factor_enabled', true)),
             ])
-            ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+            ->recordActions([
+                ViewAction::make(),
+                EditAction::make(),
+                DeleteAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ])
             ->defaultSort('created_at', 'desc');
@@ -227,9 +241,9 @@ class UserResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListUsers::route('/'),
-            'create' => Pages\CreateUser::route('/create'),
-            'edit' => Pages\EditUser::route('/{record}/edit'),
+            'index' => ListUsers::route('/'),
+            'create' => CreateUser::route('/create'),
+            'edit' => EditUser::route('/{record}/edit'),
         ];
     }
 }

@@ -4,6 +4,7 @@ namespace App\Filament\Resources\DeviceResource\Pages;
 
 use App\Filament\Resources\DeviceResource;
 use App\Services\IpAssignmentService;
+use Exception;
 use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Support\Facades\Log;
 
@@ -39,7 +40,7 @@ class CreateDevice extends CreateRecord
         if ($this->primaryIpId) {
             try {
                 $service->assignIpToDevice($deviceId, $this->primaryIpId, true);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 // Log error but don't fail device creation
                 Log::warning('Fehler beim Zuweisen der primären IP: '.$e->getMessage());
             }
@@ -49,7 +50,7 @@ class CreateDevice extends CreateRecord
         foreach ($this->additionalIpIds as $ipId) {
             try {
                 $service->assignIpToDevice($deviceId, $ipId, false);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 // Log error but don't fail device creation
                 Log::warning("Fehler beim Zuweisen der zusätzlichen IP {$ipId}: ".$e->getMessage());
             }

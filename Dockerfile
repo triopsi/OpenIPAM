@@ -1,101 +1,58 @@
-# Use PHP 8.4 with Apache
-FROM php:8.4-apache-trixie
-
-# Set Timezone
-ENV TZ="Europe/Berlin"
-
-# Set working directory
+# syntax=docker/dockerfile:1
+FROM php:8.4-apache-bookworm AS base
 WORKDIR /var/www/html
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl git unzip libicu-dev libonig-dev libpng-dev libpq-dev libsqlite3-dev libzip-dev \
+    && docker-php-ext-install -j"$(nproc)" bcmath gd intl mbstring opcache pcntl pdo_mysql pdo_pgsql pdo_sqlite zip \
+    && a2enmod rewrite headers \
+    && sed -i 's/Listen 80/Listen 8080/' /etc/apache2/ports.conf \
+    && echo 'ServerName localhost' > /etc/apache2/conf-available/servername.conf \
+    && a2enconf servername \
+    && rm -rf /var/lib/apt/lists/*
+COPY --from=composer:2 /usr/bin/composer /usr/local/bin/composer
+COPY .docker/apache.conf /etc/apache2/sites-available/000-default.conf
+EXPOSE 8080
 
-# Set the PHP configuration to development mode
-RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
+FROM node:24-bookworm-slim AS node
 
-# Enable .htaccess files & mod_rewrite.
-RUN a2enmod rewrite
+FROM base AS development
+ENV COMPOSER_ALLOW_SUPERUSER=1
+COPY --from=node /usr/local/ /usr/local/
+RUN apt-get update && apt-get install -y --no-install-recommends openssh-client pre-commit \
+    && rm -rf /var/lib/apt/lists/*
 
-# Install mysqli and pdo_mysql extensions
-RUN docker-php-ext-install mysqli pdo pdo_mysql
+FROM node AS frontend
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN --mount=type=cache,target=/root/.npm npm ci --no-audit --no-fund
+# Filament's theme imports its vendor CSS and scans PHP components.
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    git \
-    curl \
-    libicu-dev \
-    libpng-dev \
-    libonig-dev \
-    libxml2-dev \
-    libzip-dev \
-    zip \
-    unzip
+FROM base AS dependencies
+ENV COMPOSER_ALLOW_SUPERUSER=1
+COPY composer.json composer.lock ./
+RUN --mount=type=cache,target=/tmp/composer-cache \
+    COMPOSER_CACHE_DIR=/tmp/composer-cache composer install --no-dev --no-scripts --prefer-dist --no-interaction
+COPY . .
+RUN composer dump-autoload --no-dev --optimize
 
-# Install PHP extensions
-RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip opcache
+FROM frontend AS assets
+COPY --from=dependencies /var/www/html/vendor ./vendor
+COPY vite.config.js ./
+COPY app ./app
+COPY resources ./resources
+RUN npm run build
 
-# Install CA certificates
-RUN apt-get update && apt-get install -y ca-certificates && update-ca-certificates
-
-# Opcache recommended settings
-RUN { \
-	echo 'opcache.memory_consumption=128'; \
-	echo 'opcache.interned_strings_buffer=8'; \
-	echo 'opcache.max_accelerated_files=4000'; \
-	echo 'opcache.revalidate_freq=2'; \
-	echo 'opcache.fast_shutdown=1'; \
-	} > /usr/local/etc/php/conf.d/opcache-recommended.ini
-
-# Install Node.js
-RUN curl -sL https://deb.nodesource.com/setup_24.x | bash - ; \
-	apt-get install -y nodejs
-
-# Install the intl extension
-RUN docker-php-ext-configure intl \
-	&& docker-php-ext-install intl
-    
-# Get latest Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
-
-# Install Redis
-RUN pecl install redis && docker-php-ext-enable redis
-
-# Configure Apache
-COPY docker/apache/000-default.conf /etc/apache2/sites-available/000-default.conf
-
-# Set ServerName to suppress warnings
-RUN echo "ServerName localhost" > /etc/apache2/conf-available/servername.conf
-RUN a2enconf servername
-
-# Copy existing application directory contents
-COPY . /var/www/html
-
-# Copy existing application directory permissions
-COPY --chown=www-data:www-data . /var/www/html
-
-# Install PHP dependencies
-RUN composer install --no-dev --optimize-autoloader
-
-# Install Node dependencies and build assets
-RUN npm install && npm run build
-
-# Update npm to latest globally
-RUN npm install -g npm@latest && npm cache clean --force
-
-# Create storage and bootstrap/cache directories
-RUN mkdir -p storage/logs storage/framework/{cache,sessions,views} bootstrap/cache \
-    && chown -R www-data:www-data storage bootstrap/cache \
-    && chmod -R 755 storage bootstrap/cache
-
-# Copy docker entrypoint script
-COPY docker/entrypoint.sh /usr/local/bin/
-RUN chmod +x /usr/local/bin/entrypoint.sh
-
-# Clean up
-RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-
-# Expose port 80
-EXPOSE 80
-
-# Set entrypoint
-ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
-
-# Start Apache
+FROM base AS production
+ARG APP_VERSION=dev
+ENV APP_ENV=production APP_DEBUG=false LOG_CHANNEL=stderr APP_VERSION=${APP_VERSION}
+RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini" \
+    && echo 'opcache.validate_timestamps=0' > "$PHP_INI_DIR/conf.d/zz-opcache.ini"
+COPY --from=dependencies /var/www/html .
+COPY --from=assets /app/public/build ./public/build
+RUN mkdir -p storage/app/public storage/framework/cache/data storage/framework/sessions storage/framework/views storage/logs bootstrap/cache \
+    && ln -s /var/www/html/storage/app/public public/storage \
+    && chown -R www-data:www-data storage bootstrap/cache /var/run/apache2 /var/lock/apache2
+USER www-data
+ENTRYPOINT ["sh", "/var/www/html/.docker/entrypoint.sh"]
 CMD ["apache2-foreground"]
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s CMD curl -fsS http://localhost:8080/up || exit 1

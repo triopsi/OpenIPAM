@@ -6,16 +6,18 @@ use App\Filament\Resources\SettingResource;
 use App\Models\IpAddressGroup;
 use App\Models\Setting;
 use Filament\Actions\Action;
-use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\Page;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 
 class IpamSettings extends Page
 {
     protected static string $resource = SettingResource::class;
 
-    protected static string $view = 'filament.resources.setting-resource.pages.ipam-settings';
+    protected string $view = 'filament.resources.setting-resource.pages.ipam-settings';
 
     protected static ?string $title = null;
 
@@ -51,14 +53,14 @@ class IpamSettings extends Page
         $this->form->fill($this->data);
     }
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Section::make(__('settings.ipam.section_title'))
+        return $schema
+            ->components([
+                Section::make(__('settings.ipam.section_title'))
                     ->description(__('settings.ipam.section_description'))
                     ->schema([
-                        Forms\Components\Select::make('default_ip_group')
+                        Select::make('default_ip_group')
                             ->label(__('settings.ipam.fields.default_ip_group'))
                             ->description(__('settings.ipam.fields.default_ip_group_description'))
                             ->options(function () {
@@ -69,12 +71,12 @@ class IpamSettings extends Page
                             ->searchable()
                             ->nullable(),
 
-                        Forms\Components\Toggle::make('auto_assign_primary_ip')
+                        Toggle::make('auto_assign_primary_ip')
                             ->label(__('settings.ipam.fields.auto_assign_primary_ip'))
                             ->description(__('settings.ipam.fields.auto_assign_primary_ip_description'))
                             ->default(true),
 
-                        Forms\Components\Toggle::make('reserve_network_broadcast')
+                        Toggle::make('reserve_network_broadcast')
                             ->label(__('settings.ipam.fields.reserve_network_broadcast'))
                             ->description(__('settings.ipam.fields.reserve_network_broadcast_description'))
                             ->default(true),

@@ -7,6 +7,7 @@ use App\Filament\Resources\IpAddressResource;
 use App\Filament\Resources\UserResource;
 use App\Models\Device;
 use App\Models\IpAddress;
+use App\Models\IpAddressGroup;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
@@ -175,7 +176,7 @@ class FilamentResourceTest extends TestCase
         $user = User::factory()->create(['is_admin' => true]);
         $this->actingAs($user);
 
-        $group = \App\Models\IpAddressGroup::factory()->create();
+        $group = IpAddressGroup::factory()->create();
 
         // Test mit validen Daten zuerst
         $validResponse = Livewire::test(IpAddressResource\Pages\CreateIpAddress::class)

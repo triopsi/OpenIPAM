@@ -2,10 +2,17 @@
 
 namespace App\Filament\Resources\DeviceResource\RelationManagers;
 
-use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Actions\AttachAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DetachAction;
+use Filament\Actions\DetachBulkAction;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Toggle;
 use Filament\Resources\RelationManagers\RelationManager;
-use Filament\Tables;
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 
@@ -22,17 +29,17 @@ class IpAddressesRelationManager extends RelationManager
 
     protected static ?string $recordTitleAttribute = 'ip_address';
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Select::make('ip_address_id')
+        return $schema
+            ->components([
+                Select::make('ip_address_id')
                     ->label(__('devices.relation_managers.ip_addresses.fields.ip_address'))
                     ->relationship('ipAddresses', 'ip_address')
                     ->searchable()
                     ->preload()
                     ->required(),
-                Forms\Components\Toggle::make('is_primary')
+                Toggle::make('is_primary')
                     ->label(__('devices.relation_managers.ip_addresses.fields.is_primary'))
                     ->default(false),
             ]);
@@ -43,22 +50,22 @@ class IpAddressesRelationManager extends RelationManager
         return $table
             ->recordTitleAttribute('ip_address')
             ->columns([
-                Tables\Columns\TextColumn::make('ip_address')
+                TextColumn::make('ip_address')
                     ->label(__('devices.relation_managers.ip_addresses.table.ip_address'))
                     ->copyable()
                     ->searchable(),
-                Tables\Columns\TextColumn::make('version')
+                TextColumn::make('version')
                     ->label(__('devices.relation_managers.ip_addresses.table.version'))
                     ->badge()
                     ->formatStateUsing(fn (int $state): string => "IPv{$state}"),
-                Tables\Columns\TextColumn::make('subnet')
+                TextColumn::make('subnet')
                     ->label(__('devices.relation_managers.ip_addresses.table.subnet'))
                     ->toggleable(),
-                Tables\Columns\IconColumn::make('pivot.is_primary')
+                IconColumn::make('pivot.is_primary')
                     ->label(__('devices.relation_managers.ip_addresses.table.primary'))
                     ->boolean()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('status')
+                TextColumn::make('status')
                     ->label(__('devices.relation_managers.ip_addresses.table.status'))
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
@@ -75,7 +82,7 @@ class IpAddressesRelationManager extends RelationManager
                     }),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('version')
+                SelectFilter::make('version')
                     ->label(__('devices.relation_managers.ip_addresses.filters.version'))
                     ->options([
                         4 => 'IPv4',
@@ -83,22 +90,22 @@ class IpAddressesRelationManager extends RelationManager
                     ]),
             ])
             ->headerActions([
-                Tables\Actions\AttachAction::make()
+                AttachAction::make()
                     ->preloadRecordSelect()
-                    ->form(fn (Tables\Actions\AttachAction $action): array => [
+                    ->form(fn (AttachAction $action): array => [
                         $action->getRecordSelect()
                             ->label(__('devices.relation_managers.ip_addresses.actions.select_ip')),
-                        Forms\Components\Toggle::make('is_primary')
+                        Toggle::make('is_primary')
                             ->label(__('devices.relation_managers.ip_addresses.fields.is_primary_full'))
                             ->default(false),
                     ]),
             ])
-            ->actions([
-                Tables\Actions\DetachAction::make(),
+            ->recordActions([
+                DetachAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DetachBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DetachBulkAction::make(),
                 ]),
             ]);
     }

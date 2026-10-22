@@ -3,11 +3,19 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\IpAddressGroupResource\Pages;
+use App\Filament\Resources\IpAddressGroupResource\Pages\CreateIpAddressGroup;
+use App\Filament\Resources\IpAddressGroupResource\Pages\EditIpAddressGroup;
+use App\Filament\Resources\IpAddressGroupResource\Pages\ListIpAddressGroups;
 use App\Models\IpAddressGroup;
-use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
 /**
@@ -35,11 +43,11 @@ class IpAddressGroupResource extends Resource
 {
     protected static ?string $model = IpAddressGroup::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-archive-box';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-archive-box';
 
     protected static ?string $navigationLabel = null;
 
-    protected static ?string $navigationGroup = null;
+    protected static string|\UnitEnum|null $navigationGroup = null;
 
     protected static ?string $modelLabel = null;
 
@@ -73,19 +81,19 @@ class IpAddressGroupResource extends Resource
      * Configure the Filament form used to create and edit IpAddressGroup records,
      * including fields, layout, validation rules, and state handling.
      *
-     * @param  \Filament\Forms\Form  $form  The form instance to configure.
-     * @return \Filament\Forms\Form The configured form instance.
+     * @param  Schema  $schema  The form instance to configure.
+     * @return Schema The configured form instance.
      */
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form->schema([
-            Forms\Components\TextInput::make('name')
+        return $schema->components([
+            TextInput::make('name')
                 ->label(__('ip_address_groups.fields.name'))
                 ->helperText(__('ip_address_groups.fields.name_help'))
                 ->required()
                 ->columnSpanFull()
                 ->maxLength(255),
-            Forms\Components\Textarea::make('description')
+            Textarea::make('description')
                 ->label(__('ip_address_groups.fields.description'))
                 ->helperText(__('ip_address_groups.fields.description_help'))
                 ->rows(2)
@@ -108,31 +116,31 @@ class IpAddressGroupResource extends Resource
     public static function table(Table $table): Table
     {
         return $table->columns([
-            Tables\Columns\TextColumn::make('id')
+            TextColumn::make('id')
                 ->label(__('ip_address_groups.table.id'))
                 ->searchable()
                 ->sortable(),
-            Tables\Columns\TextColumn::make('name')
+            TextColumn::make('name')
                 ->label(__('ip_address_groups.table.name'))
                 ->searchable()
                 ->sortable(),
-            Tables\Columns\TextColumn::make('description')
+            TextColumn::make('description')
                 ->label(__('ip_address_groups.table.description'))
                 ->limit(50)
                 ->toggleable(),
-            Tables\Columns\TextColumn::make('created_at')
+            TextColumn::make('created_at')
                 ->label(__('ip_address_groups.table.created_at'))
                 ->dateTime('d.m.Y H:i')
                 ->sortable()
                 ->toggleable(isToggledHiddenByDefault: true),
         ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+            ->recordActions([
+                EditAction::make(),
+                DeleteAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ])
             ->defaultSort('created_at', 'desc');
@@ -151,9 +159,9 @@ class IpAddressGroupResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListIpAddressGroups::route('/'),
-            'create' => Pages\CreateIpAddressGroup::route('/create'),
-            'edit' => Pages\EditIpAddressGroup::route('/{record}/edit'),
+            'index' => ListIpAddressGroups::route('/'),
+            'create' => CreateIpAddressGroup::route('/create'),
+            'edit' => EditIpAddressGroup::route('/{record}/edit'),
         ];
     }
 }

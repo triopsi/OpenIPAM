@@ -20,7 +20,7 @@ class SetLocaleMiddleware
      * 3. Request language parameter
      * 4. Default application locale as fallback
      *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     * @param  Closure(Request):Response  $next
      */
     public function handle(Request $request, Closure $next): Response
     {

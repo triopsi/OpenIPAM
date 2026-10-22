@@ -9,5 +9,5 @@ class EmailTwoFactorAuth extends Page
 {
     protected static string $resource = UserResource::class;
 
-    protected static string $view = 'filament.resources.user-resource.pages.email-two-factor-auth';
+    protected string $view = 'filament.resources.user-resource.pages.email-two-factor-auth';
 }

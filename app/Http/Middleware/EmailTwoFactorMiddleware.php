@@ -19,7 +19,7 @@ class EmailTwoFactorMiddleware
      * and redirects to the verification page if they haven't verified their
      * session yet. It also generates and sends verification codes as needed.
      *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     * @param  Closure(Request):Response  $next
      */
     public function handle(Request $request, Closure $next): Response
     {

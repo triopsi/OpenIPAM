@@ -5,15 +5,19 @@ namespace App\Filament\Resources\DeviceResource\Pages;
 use App\Filament\Resources\DeviceResource;
 use App\Models\Device;
 use App\Models\IpAddress;
+use Exception;
 use Filament\Actions;
+use Filament\Actions\Action;
+use Filament\Actions\CreateAction;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Placeholder;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
+use Filament\Schemas\Components\Section;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\HtmlString;
 use League\Csv\Reader;
 use League\Csv\Statement;
 
@@ -27,19 +31,19 @@ class ListDevices extends ListRecords
      * Contains Create action and CSV Import action with comprehensive
      * mapping system for CSV columns and IP address processing.
      *
-     * @return array<Actions\Action> Array of Filament actions
+     * @return array<Action> Array of Filament actions
      */
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
-            Actions\Action::make('csvImport')
+            CreateAction::make(),
+            Action::make('csvImport')
                 ->label(__('devices.csv_import.title'))
                 ->icon('heroicon-o-document-arrow-up')
                 ->color('info')
                 ->modalWidth('7xl')
                 ->closeModalByClickingAway(false)
-                ->form([
+                ->schema([
                     FileUpload::make('csv_file')
                         ->label(__('devices.csv_import.file_label'))
                         ->acceptedFileTypes(['text/csv', 'text/plain', 'application/csv'])
@@ -233,19 +237,19 @@ class ListDevices extends ListRecords
      * @param  mixed  $filePath  Path to CSV file (can be TemporaryUploadedFile or string)
      * @param  string  $delimiter  CSV delimiter (,;\t|)
      * @param  bool  $hasHeader  Whether the CSV file has a header row
-     * @return \Illuminate\Support\HtmlString HTML preview of CSV data
+     * @return HtmlString HTML preview of CSV data
      */
     protected function getCsvPreview($filePath, $delimiter, $hasHeader)
     {
         if (empty($filePath)) {
-            return new \Illuminate\Support\HtmlString('<p class="text-gray-500">'.__('devices.csv_import.preview_messages.upload_file').'</p>');
+            return new HtmlString('<p class="text-gray-500">'.__('devices.csv_import.preview_messages.upload_file').'</p>');
         }
 
         try {
             // Handle TemporaryUploadedFile from FileUpload component
             if (is_array($filePath)) {
                 if (empty($filePath)) {
-                    return new \Illuminate\Support\HtmlString('<p class="text-red-500">'.__('devices.csv_import.preview_messages.invalid_file').'</p>');
+                    return new HtmlString('<p class="text-red-500">'.__('devices.csv_import.preview_messages.invalid_file').'</p>');
                 }
                 // Get first value from associative array
                 $uploadedFile = reset($filePath);
@@ -264,7 +268,7 @@ class ListDevices extends ListRecords
             }
 
             if (! file_exists($fullPath)) {
-                return new \Illuminate\Support\HtmlString('<p class="text-red-500">'.__('devices.csv_import.preview_messages.file_not_found', ['path' => $fullPath]).'</p>');
+                return new HtmlString('<p class="text-red-500">'.__('devices.csv_import.preview_messages.file_not_found', ['path' => $fullPath]).'</p>');
             }
 
             $csv = Reader::from($fullPath, 'r');
@@ -275,7 +279,7 @@ class ListDevices extends ListRecords
             $preview = iterator_to_array($records);
 
             if (empty($preview)) {
-                return new \Illuminate\Support\HtmlString('<p class="text-red-500">'.__('devices.csv_import.preview_messages.empty_file').'</p>');
+                return new HtmlString('<p class="text-red-500">'.__('devices.csv_import.preview_messages.empty_file').'</p>');
             }
 
             $html = '<div class="overflow-x-auto border-2 border-red-800 rounded bg-red-50"><table class="min-w-full divide-y divide-red-200">';
@@ -298,9 +302,9 @@ class ListDevices extends ListRecords
 
             $html .= '</table></div>';
 
-            return new \Illuminate\Support\HtmlString($html);
-        } catch (\Exception $e) {
-            return new \Illuminate\Support\HtmlString('<p class="text-red-500">'.__('devices.csv_import.preview_messages.read_error', ['error' => $e->getMessage()]).'</p>');
+            return new HtmlString($html);
+        } catch (Exception $e) {
+            return new HtmlString('<p class="text-red-500">'.__('devices.csv_import.preview_messages.read_error', ['error' => $e->getMessage()]).'</p>');
         }
     }
 
@@ -375,7 +379,7 @@ class ListDevices extends ListRecords
             }
 
             return $options;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return ['ignore' => __('devices.csv_import.column_options.ignore')];
         }
     }
@@ -389,7 +393,7 @@ class ListDevices extends ListRecords
      *
      * @param  array<string, mixed>  $data  Form data with CSV file and mapping settings
      *
-     * @throws \Exception On errors during import
+     * @throws Exception On errors during import
      */
     protected function executeImport(array $data): void
     {
@@ -397,7 +401,7 @@ class ListDevices extends ListRecords
             // Handle TemporaryUploadedFile from FileUpload component
             if (is_array($data['csv_file'])) {
                 if (empty($data['csv_file'])) {
-                    throw new \Exception(__('devices.csv_import.error_messages.no_valid_file'));
+                    throw new Exception(__('devices.csv_import.error_messages.no_valid_file'));
                 }
                 // Get first value from associative array
                 $uploadedFile = reset($data['csv_file']);
@@ -555,7 +559,7 @@ class ListDevices extends ListRecords
                             }
                         }
                     }
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     $errors++;
 
                     continue;
@@ -587,7 +591,7 @@ class ListDevices extends ListRecords
 
             // Update table
             $this->redirect(request()->header('Referer'));
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Notification::make()
                 ->title(__('devices.csv_import.notifications.error_title'))
                 ->body(__('devices.csv_import.error_messages.import_failed', ['error' => $e->getMessage()]))
@@ -641,7 +645,7 @@ class ListDevices extends ListRecords
                 'group' => 'imported',
                 'description' => 'Imported via CSV',
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // Log error but don't fail the whole import
             return null;
         }
@@ -727,7 +731,7 @@ class ListDevices extends ListRecords
                     }
                 }
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // Silently fail if auto-suggestion doesn't work
         }
     }

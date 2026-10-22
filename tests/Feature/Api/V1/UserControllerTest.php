@@ -22,7 +22,10 @@ class UserControllerTest extends TestCase
     {
         parent::setUp();
 
-        $this->user = User::factory()->create();
+        $this->user = User::factory()->create([
+            'name' => 'API Test Operator',
+            'email' => 'operator@example.test',
+        ]);
         $this->token = $this->user->createToken('Test Token')->plainTextToken;
     }
 

@@ -2,10 +2,17 @@
 
 namespace App\Filament\Resources\IpAddressResource\RelationManagers;
 
-use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Actions\AttachAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DetachAction;
+use Filament\Actions\DetachBulkAction;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Toggle;
 use Filament\Resources\RelationManagers\RelationManager;
-use Filament\Tables;
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 
@@ -22,17 +29,17 @@ class DevicesRelationManager extends RelationManager
 
     protected static ?string $recordTitleAttribute = 'name';
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Select::make('device_id')
+        return $schema
+            ->components([
+                Select::make('device_id')
                     ->label(__('ip_addresses.relation_managers.devices.fields.device'))
                     ->relationship('devices', 'name')
                     ->searchable()
                     ->preload()
                     ->required(),
-                Forms\Components\Toggle::make('is_primary')
+                Toggle::make('is_primary')
                     ->label(__('ip_addresses.relation_managers.devices.fields.is_primary'))
                     ->default(false),
             ]);
@@ -43,14 +50,14 @@ class DevicesRelationManager extends RelationManager
         return $table
             ->recordTitleAttribute('name')
             ->columns([
-                Tables\Columns\TextColumn::make('name')
+                TextColumn::make('name')
                     ->label(__('ip_addresses.relation_managers.devices.table.name'))
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('hostname')
+                TextColumn::make('hostname')
                     ->label(__('ip_addresses.relation_managers.devices.table.hostname'))
                     ->searchable(),
-                Tables\Columns\TextColumn::make('type')
+                TextColumn::make('type')
                     ->label(__('ip_addresses.relation_managers.devices.table.type'))
                     ->badge()
                     ->formatStateUsing(fn (string $state): string => match ($state) {
@@ -64,11 +71,11 @@ class DevicesRelationManager extends RelationManager
                         'access_point' => __('devices.types.access_point'),
                         default => __('devices.types.other'),
                     }),
-                Tables\Columns\IconColumn::make('pivot.is_primary')
+                IconColumn::make('pivot.is_primary')
                     ->label(__('ip_addresses.relation_managers.devices.table.primary_ip'))
                     ->boolean()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('status')
+                TextColumn::make('status')
                     ->label(__('ip_addresses.relation_managers.devices.table.status'))
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
@@ -85,7 +92,7 @@ class DevicesRelationManager extends RelationManager
                     }),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('type')
+                SelectFilter::make('type')
                     ->label(__('ip_addresses.relation_managers.devices.filters.type'))
                     ->options([
                         'server' => __('devices.types.server'),
@@ -99,22 +106,22 @@ class DevicesRelationManager extends RelationManager
                     ]),
             ])
             ->headerActions([
-                Tables\Actions\AttachAction::make()
+                AttachAction::make()
                     ->preloadRecordSelect()
-                    ->form(fn (Tables\Actions\AttachAction $action): array => [
+                    ->form(fn (AttachAction $action): array => [
                         $action->getRecordSelect()
                             ->label(__('ip_addresses.relation_managers.devices.actions.select_device')),
-                        Forms\Components\Toggle::make('is_primary')
+                        Toggle::make('is_primary')
                             ->label(__('ip_addresses.relation_managers.devices.fields.is_primary'))
                             ->default(false),
                     ]),
             ])
-            ->actions([
-                Tables\Actions\DetachAction::make(),
+            ->recordActions([
+                DetachAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DetachBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DetachBulkAction::make(),
                 ]),
             ]);
     }

@@ -1,5 +1,7 @@
 <?php
 
+use App\Filament\Pages\Auth\EmailTwoFactorChallenge;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -11,7 +13,7 @@ Route::get('/', function () {
 Route::redirect('/dashboard', '/admin')->name('dashboard');
 
 // Email 2FA Challenge Route
-Route::get('/admin/email-2fa', \App\Filament\Pages\Auth\EmailTwoFactorChallenge::class)
+Route::get('/admin/email-2fa', EmailTwoFactorChallenge::class)
     ->middleware(['web', 'auth'])
     ->name('filament.admin.auth.email-2fa');
 
@@ -26,7 +28,7 @@ Route::post('/language', function (Request $request) {
 
         // Update user preference if authenticated
         if (Auth::check()) {
-            /** @var \App\Models\User $user * */
+            /** @var User $user * */
             $user = Auth::user();
             $user->update(['language' => $language]);
         }

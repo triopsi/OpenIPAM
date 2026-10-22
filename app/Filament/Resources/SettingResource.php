@@ -2,21 +2,33 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\SettingResource\Pages;
+use App\Filament\Resources\SettingResource\Pages\CreateSetting;
+use App\Filament\Resources\SettingResource\Pages\EditSetting;
+use App\Filament\Resources\SettingResource\Pages\IpamSettings;
+use App\Filament\Resources\SettingResource\Pages\ListSettings;
 use App\Models\Setting;
-use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
 class SettingResource extends Resource
 {
     protected static ?string $model = Setting::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-cog-6-tooth';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-cog-6-tooth';
 
-    protected static ?string $navigationGroup = null;
+    protected static string|\UnitEnum|null $navigationGroup = null;
 
     protected static ?string $navigationLabel = null;
 
@@ -44,26 +56,26 @@ class SettingResource extends Resource
         return __('settings.plural_model_label');
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\TextInput::make('key')
+        return $schema
+            ->components([
+                TextInput::make('key')
                     ->label(__('settings.fields.key'))
                     ->required()
                     ->unique(ignoreRecord: true)
                     ->maxLength(255),
 
-                Forms\Components\TextInput::make('label')
+                TextInput::make('label')
                     ->label(__('settings.fields.label'))
                     ->required()
                     ->maxLength(255),
 
-                Forms\Components\Textarea::make('description')
+                Textarea::make('description')
                     ->label(__('settings.fields.description'))
                     ->rows(2),
 
-                Forms\Components\Select::make('group')
+                Select::make('group')
                     ->label(__('settings.fields.group'))
                     ->options([
                         'general' => 'Allgemein',
@@ -73,7 +85,7 @@ class SettingResource extends Resource
                     ])
                     ->default('general'),
 
-                Forms\Components\Select::make('type')
+                Select::make('type')
                     ->label(__('settings.fields.type'))
                     ->options([
                         'string' => __('settings.types.string'),
@@ -84,23 +96,23 @@ class SettingResource extends Resource
                     ->default('string')
                     ->live(),
 
-                Forms\Components\TextInput::make('value')
+                TextInput::make('value')
                     ->label(__('settings.fields.value'))
-                    ->visible(fn (Forms\Get $get) => $get('type') === 'string'),
+                    ->visible(fn (Get $get) => $get('type') === 'string'),
 
-                Forms\Components\Toggle::make('value')
+                Toggle::make('value')
                     ->label(__('settings.fields.value'))
-                    ->visible(fn (Forms\Get $get) => $get('type') === 'boolean'),
+                    ->visible(fn (Get $get) => $get('type') === 'boolean'),
 
-                Forms\Components\TextInput::make('value')
+                TextInput::make('value')
                     ->label(__('settings.fields.value'))
                     ->numeric()
-                    ->visible(fn (Forms\Get $get) => $get('type') === 'integer'),
+                    ->visible(fn (Get $get) => $get('type') === 'integer'),
 
-                Forms\Components\Textarea::make('value')
+                Textarea::make('value')
                     ->label(__('settings.fields.value_json'))
                     ->rows(3)
-                    ->visible(fn (Forms\Get $get) => $get('type') === 'json'),
+                    ->visible(fn (Get $get) => $get('type') === 'json'),
             ]);
     }
 
@@ -108,17 +120,17 @@ class SettingResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('label')
+                TextColumn::make('label')
                     ->label(__('settings.table.label'))
                     ->searchable()
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('key')
+                TextColumn::make('key')
                     ->label(__('settings.table.key'))
                     ->searchable()
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('group')
+                TextColumn::make('group')
                     ->label(__('settings.table.group'))
                     ->badge()
                     ->colors([
@@ -128,22 +140,22 @@ class SettingResource extends Resource
                         'info' => 'notifications',
                     ]),
 
-                Tables\Columns\TextColumn::make('type')
+                TextColumn::make('type')
                     ->label(__('settings.table.type'))
                     ->badge(),
 
-                Tables\Columns\TextColumn::make('value')
+                TextColumn::make('value')
                     ->label(__('settings.table.value'))
                     ->limit(50),
 
-                Tables\Columns\TextColumn::make('updated_at')
+                TextColumn::make('updated_at')
                     ->label(__('settings.table.updated_at'))
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('group')
+                SelectFilter::make('group')
                     ->label(__('settings.filters.group'))
                     ->options([
                         'general' => __('settings.groups.general'),
@@ -152,13 +164,13 @@ class SettingResource extends Resource
                         'notifications' => __('settings.groups.notifications'),
                     ]),
             ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+            ->recordActions([
+                EditAction::make(),
+                DeleteAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ]);
     }
@@ -166,10 +178,10 @@ class SettingResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListSettings::route('/'),
-            'create' => Pages\CreateSetting::route('/create'),
-            'edit' => Pages\EditSetting::route('/{record}/edit'),
-            'ipam-settings' => Pages\IpamSettings::route('/ipam'),
+            'index' => ListSettings::route('/'),
+            'create' => CreateSetting::route('/create'),
+            'edit' => EditSetting::route('/{record}/edit'),
+            'ipam-settings' => IpamSettings::route('/ipam'),
         ];
     }
 }

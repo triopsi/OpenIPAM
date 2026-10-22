@@ -3,6 +3,7 @@
 namespace App\Console\Commands\User;
 
 use App\Models\User;
+use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
@@ -63,7 +64,7 @@ class CreateUserCommand extends Command
             $this->line("Gravatar type: {$user->gravatar_type}");
 
             return 0;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error("Error creating user: {$e->getMessage()}");
 
             return 1;

@@ -1,0 +1,83 @@
+name: Bug report
+description: Report a reproducible problem with OpenIPAM.
+title: "[Bug]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve OpenIPAM! Please include enough detail to reproduce the problem.
+        Remove passwords, application keys, tokens and network inventory data from logs and screenshots.
+  - type: checkboxes
+    id: existing-issues
+    attributes:
+      label: Before submitting
+      options:
+        - label: I have searched the existing issues for this problem.
+          required: true
+  - type: textarea
+    id: actual-behavior
+    attributes:
+      label: What happened?
+      description: Describe the problem and any error message you see.
+    validations:
+      required: true
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: Steps to reproduce
+      description: Include a small example with fictional data if the problem involves calculations.
+      placeholder: |
+        1. Open ...
+        2. Create ...
+        3. Click ...
+        4. Observe ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected behavior
+      description: What did you expect to happen?
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: OpenIPAM version
+      description: Include the release version or commit SHA.
+      placeholder: Release version or commit SHA
+    validations:
+      required: true
+  - type: dropdown
+    id: installation
+    attributes:
+      label: Installation method
+      options:
+        - Docker image from Docker Hub
+        - Development container
+        - Local installation
+        - Other (describe below)
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Include the details relevant to this issue. Do not paste your full .env file.
+      placeholder: |
+        Host OS:
+        Browser and version:
+        Database (SQLite, MariaDB or PostgreSQL):
+        Reverse proxy and HTTP/HTTPS:
+        PHP version (if not using the release image):
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs
+      description: Paste relevant browser console errors or output from docker compose logs --tail=100 app. Remove sensitive information first.
+      render: text
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Screenshots and additional context
+      description: Attach screenshots or describe anything else that could help, such as whether this started after an update.

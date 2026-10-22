@@ -1,0 +1,47 @@
+# Development with PostgreSQL. MariaDB: use compose.mariadb.yaml instead.
+services:
+  app:
+    build:
+      context: .
+      target: development
+    ports:
+      - "127.0.0.1:${APP_PORT:-9080}:8080"
+      - "127.0.0.1:${VITE_PORT:-9517}:5173"
+    volumes:
+      - .:/var/www/html
+    environment:
+      VITE_PORT: ${VITE_PORT:-9517}
+      APP_ENV: local
+      APP_DEBUG: "true"
+      APP_URL: http://localhost:${APP_PORT:-9080}
+      DB_CONNECTION: pgsql
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_DATABASE: openipam
+      DB_USERNAME: openipam
+      DB_PASSWORD: local-development-only
+      MAIL_HOST: mailpit
+      MAIL_PORT: 1025
+      QUEUE_CONNECTION: sync
+    depends_on:
+      db:
+        condition: service_healthy
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: openipam
+      POSTGRES_USER: openipam
+      POSTGRES_PASSWORD: local-development-only
+    volumes:
+      - database:/var/lib/postgresql/data
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U openipam -d openipam"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+  mailpit:
+    image: axllent/mailpit:latest
+    ports:
+      - "127.0.0.1:${MAILPIT_PORT:-9025}:8025"
+volumes:
+  database:

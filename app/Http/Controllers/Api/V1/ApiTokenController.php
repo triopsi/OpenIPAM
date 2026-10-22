@@ -36,7 +36,7 @@ class ApiTokenController extends Controller
             'never_expires' => 'boolean',
         ]);
 
-        /** @var \App\Models\User $user * */
+        /** @var User $user * */
         $user = auth()->user();
 
         // Determine expiration
@@ -68,7 +68,7 @@ class ApiTokenController extends Controller
      */
     public function destroy(string $tokenId): JsonResponse
     {
-        /** @var \App\Models\User $user * */
+        /** @var User $user * */
         $user = auth()->user();
 
         $token = $user->tokens()->where('id', $tokenId)->first();

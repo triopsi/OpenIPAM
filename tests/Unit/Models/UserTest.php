@@ -3,6 +3,7 @@
 namespace Tests\Unit\Models;
 
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
@@ -77,7 +78,7 @@ class UserTest extends TestCase
 
         $this->assertTrue($user->email_two_factor_enabled);
         $this->assertEquals('123456', $user->email_two_factor_code);
-        $this->assertInstanceOf(\Carbon\Carbon::class, $user->email_two_factor_expires_at);
+        $this->assertInstanceOf(Carbon::class, $user->email_two_factor_expires_at);
     }
 
     public function test_user_has_email_two_factor_enabled(): void
@@ -146,6 +147,6 @@ class UserTest extends TestCase
 
         $this->assertIsString($user->password);
         $this->assertIsBool($user->email_two_factor_enabled);
-        $this->assertInstanceOf(\Carbon\Carbon::class, $user->email_two_factor_expires_at);
+        $this->assertInstanceOf(Carbon::class, $user->email_two_factor_expires_at);
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Console\Commands\User;
 
 use App\Models\User;
+use Exception;
 use Illuminate\Console\Command;
 
 class DeleteUserCommand extends Command
@@ -41,7 +42,7 @@ class DeleteUserCommand extends Command
             $this->info("User '{$userName}' has been deleted successfully.");
 
             return 0;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error("Error deleting user: {$e->getMessage()}");
 
             return 1;

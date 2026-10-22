@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Api\V1;
 
+use App\Models\IpAddress;
 use App\Models\IpAddressGroup;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -294,7 +295,7 @@ class IpAddressGroupControllerTest extends TestCase
         $group = IpAddressGroup::factory()->create(['name' => 'Test Group']);
 
         // Create IP addresses in this group
-        \App\Models\IpAddress::factory()->count(3)->create(['group_id' => $group->id]);
+        IpAddress::factory()->count(3)->create(['group_id' => $group->id]);
 
         $response = $this->withHeaders($this->authHeaders())
             ->getJson("/api/v1/ip-address-groups/{$group->id}");

@@ -1,36 +1,8 @@
 {
-    "plugins": [
-        ["@semantic-release/commit-analyzer"],
-        ["@semantic-release/release-notes-generator"],
-
-        [
-            "@semantic-release/exec",
-            {
-                "prepareCmd": "echo '${nextRelease.version}' > VERSION && zip -r open-ipam.zip . -x @.buildignore"
-            }
-        ],
-
-        [
-            "@semantic-release/changelog",
-            {
-                "changelogFile": "CHANGELOG.md"
-            }
-        ],
-
-        [
-            "@semantic-release/github",
-            {
-                "assets": [
-                    {
-                        "path": "open-ipam.zip",
-                        "label": "open-ipam.zip"
-                    },
-                    {
-                        "path": "CHANGELOG.md",
-                        "label": "Changelog"
-                    }
-                ]
-            }
-        ]
-    ]
+  "branches": ["main"],
+  "plugins": [
+    "@semantic-release/commit-analyzer",
+    "@semantic-release/release-notes-generator",
+    ["@semantic-release/github", {"successComment": false, "failComment": false}]
+  ]
 }

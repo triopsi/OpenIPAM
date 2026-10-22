@@ -3,13 +3,30 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\DeviceResource\Pages;
-use App\Filament\Resources\DeviceResource\RelationManagers;
+use App\Filament\Resources\DeviceResource\Pages\CreateDevice;
+use App\Filament\Resources\DeviceResource\Pages\EditDevice;
+use App\Filament\Resources\DeviceResource\Pages\ListDevices;
+use App\Filament\Resources\DeviceResource\RelationManagers\IpAddressesRelationManager;
 use App\Models\Device;
 use App\Services\IpAssignmentService;
-use Filament\Forms;
-use Filament\Forms\Form;
+use Closure;
+use Filament\Actions\BulkAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Resources\RelationManager;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
 /**
@@ -33,11 +50,11 @@ class DeviceResource extends Resource
 {
     protected static ?string $model = Device::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-server';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-server';
 
     protected static ?string $navigationLabel = null;
 
-    protected static ?string $navigationGroup = null;
+    protected static string|\UnitEnum|null $navigationGroup = null;
 
     protected static ?string $modelLabel = null;
 
@@ -71,31 +88,31 @@ class DeviceResource extends Resource
      * Defines the form schema, fields, validation rules, layout, and any form-specific
      * behaviors or callbacks for creating and editing Device records in Filament.
      *
-     * @param  \Filament\Forms\Form  $form  The form instance to configure.
-     * @return \Filament\Forms\Form The configured form instance.
+     * @param  Schema  $schema  The form instance to configure.
+     * @return Schema The configured form instance.
      */
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Section::make(__('devices.sections.device_information'))
+        return $schema
+            ->components([
+                Section::make(__('devices.sections.device_information'))
                     ->schema([
-                        Forms\Components\TextInput::make('name')
+                        TextInput::make('name')
                             ->label(__('devices.fields.name'))
                             ->required()
                             ->maxLength(255),
-                        Forms\Components\TextInput::make('hostname')
+                        TextInput::make('hostname')
                             ->label(__('devices.fields.hostname'))
                             ->maxLength(255),
-                        Forms\Components\TextInput::make('mac_address')
+                        TextInput::make('mac_address')
                             ->label(__('devices.fields.mac_address'))
                             ->maxLength(255)
                             ->placeholder('00:00:00:00:00:00'),
                     ])->columns(3),
 
-                Forms\Components\Section::make(__('devices.sections.details'))
+                Section::make(__('devices.sections.details'))
                     ->schema([
-                        Forms\Components\Select::make('type')
+                        Select::make('type')
                             ->label(__('devices.fields.type'))
                             ->options([
                                 'server' => __('devices.types.server'),
@@ -109,10 +126,10 @@ class DeviceResource extends Resource
                                 'other' => __('devices.types.other'),
                             ])
                             ->searchable(),
-                        Forms\Components\TextInput::make('location')
+                        TextInput::make('location')
                             ->label(__('devices.fields.location'))
                             ->maxLength(255),
-                        Forms\Components\Select::make('status')
+                        Select::make('status')
                             ->label(__('devices.fields.status'))
                             ->required()
                             ->options([
@@ -123,13 +140,13 @@ class DeviceResource extends Resource
                             ->default('active'),
                     ])->columns(3),
 
-                Forms\Components\Section::make(__('devices.sections.description'))
+                Section::make(__('devices.sections.description'))
                     ->schema([
-                        Forms\Components\Textarea::make('description')
+                        Textarea::make('description')
                             ->label(__('devices.fields.description'))
                             ->rows(3)
                             ->columnSpanFull(),
-                        Forms\Components\TextInput::make('url')
+                        TextInput::make('url')
                             ->label(__('devices.fields.url'))
                             ->url()
                             ->placeholder('https://example.com/dashboard')
@@ -138,9 +155,9 @@ class DeviceResource extends Resource
                             ->helperText(__('devices.helpers.url')),
                     ]),
 
-                Forms\Components\Section::make(__('devices.sections.ip_addresses'))
+                Section::make(__('devices.sections.ip_addresses'))
                     ->schema([
-                        Forms\Components\Select::make('primary_ip_address_id')
+                        Select::make('primary_ip_address_id')
                             ->label(__('devices.fields.primary_ip'))
                             ->placeholder(__('devices.placeholders.primary_ip'))
                             ->options(function () {
@@ -151,7 +168,7 @@ class DeviceResource extends Resource
                             ->searchable()
                             ->nullable()
                             ->live()
-                            ->afterStateUpdated(function ($state, Forms\Set $set) {
+                            ->afterStateUpdated(function ($state, Set $set) {
                                 if ($state) {
                                     $set('additional_ip_addresses', []);
                                 }
@@ -163,10 +180,10 @@ class DeviceResource extends Resource
                                 return $nextIp?->id;
                             }),
 
-                        Forms\Components\Select::make('additional_ip_addresses')
+                        Select::make('additional_ip_addresses')
                             ->label(__('devices.fields.additional_ips'))
                             ->multiple()
-                            ->options(function (Forms\Get $get) {
+                            ->options(function (Get $get) {
                                 $service = new IpAssignmentService;
                                 $options = $service->prepareIpOptionsForDevice();
 
@@ -197,26 +214,26 @@ class DeviceResource extends Resource
      * header actions, row actions, bulk actions, sorting, and pagination —
      * by modifying and returning the provided Table instance.
      *
-     * @param  \Filament\Tables\Table  $table  The table instance to configure.
-     * @return \Filament\Tables\Table The configured table instance.
+     * @param  Table  $table  The table instance to configure.
+     * @return Table The configured table instance.
      */
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name')
+                TextColumn::make('name')
                     ->label(__('devices.table.name'))
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('hostname')
+                TextColumn::make('hostname')
                     ->label(__('devices.table.hostname'))
                     ->searchable()
                     ->toggleable(),
-                Tables\Columns\TextColumn::make('mac_address')
+                TextColumn::make('mac_address')
                     ->label(__('devices.table.mac_address'))
                     ->searchable()
                     ->toggleable(),
-                Tables\Columns\TextColumn::make('type')
+                TextColumn::make('type')
                     ->label(__('devices.table.type'))
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
@@ -238,11 +255,11 @@ class DeviceResource extends Resource
                     })
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('location')
+                TextColumn::make('location')
                     ->label(__('devices.table.location'))
                     ->searchable()
                     ->toggleable(),
-                Tables\Columns\TextColumn::make('status')
+                TextColumn::make('status')
                     ->label(__('devices.table.status'))
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
@@ -258,12 +275,12 @@ class DeviceResource extends Resource
                         default => $state,
                     })
                     ->sortable(),
-                Tables\Columns\TextColumn::make('ipAddresses.ip_address')
+                TextColumn::make('ipAddresses.ip_address')
                     ->label(__('devices.table.ip_addresses'))
                     ->badge()
                     ->separator(',')
                     ->toggleable(),
-                Tables\Columns\TextColumn::make('url')
+                TextColumn::make('url')
                     ->label(__('devices.table.url'))
                     ->limit(30)
                     ->placeholder(__('devices.table.no_url'))
@@ -272,19 +289,19 @@ class DeviceResource extends Resource
                     ->icon('heroicon-o-link')
                     ->toggleable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->label(__('devices.table.created_at'))
                     ->dateTime('d.m.Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
+                TextColumn::make('updated_at')
                     ->label(__('devices.table.updated_at'))
                     ->dateTime('d.m.Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('type')
+                SelectFilter::make('type')
                     ->label(__('devices.filters.type'))
                     ->options([
                         'server' => __('devices.types.server'),
@@ -297,7 +314,7 @@ class DeviceResource extends Resource
                         'access_point' => __('devices.types.access_point'),
                         'other' => __('devices.types.other'),
                     ]),
-                Tables\Filters\SelectFilter::make('status')
+                SelectFilter::make('status')
                     ->label(__('devices.filters.status'))
                     ->options([
                         'active' => __('devices.statuses.active'),
@@ -305,14 +322,14 @@ class DeviceResource extends Resource
                         'maintenance' => __('devices.statuses.maintenance'),
                     ]),
             ])
-            ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+            ->recordActions([
+                ViewAction::make(),
+                EditAction::make(),
+                DeleteAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\BulkAction::make('csv_export')
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    BulkAction::make('csv_export')
                         ->label(__('devices.bulk_actions.csv_export'))
                         ->icon('heroicon-o-document-arrow-down')
                         ->color('success')
@@ -400,7 +417,7 @@ class DeviceResource extends Resource
                         ->modalSubmitActionLabel(__('devices.bulk_actions.csv_export_button'))
                         ->deselectRecordsAfterCompletion(),
 
-                    Tables\Actions\DeleteBulkAction::make(),
+                    DeleteBulkAction::make(),
                 ]),
             ])
             ->defaultSort('created_at', 'desc');
@@ -415,12 +432,12 @@ class DeviceResource extends Resource
      * Each element is typically a class-string of a RelationManager or a configured
      * relation descriptor that the resource will register.
      *
-     * @return array<int, class-string<\Filament\Resources\RelationManager>>
+     * @return array<int, class-string<RelationManager>>
      */
     public static function getRelations(): array
     {
         return [
-            RelationManagers\IpAddressesRelationManager::class,
+            IpAddressesRelationManager::class,
         ];
     }
 
@@ -431,14 +448,14 @@ class DeviceResource extends Resource
      * to their corresponding page handlers (page class names, route definitions, or closures)
      * used by the Filament resource.
      *
-     * @return array<string, class-string|\Closure|mixed> Array of page keys to handlers.
+     * @return array<string, class-string|Closure|mixed> Array of page keys to handlers.
      */
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListDevices::route('/'),
-            'create' => Pages\CreateDevice::route('/create'),
-            'edit' => Pages\EditDevice::route('/{record}/edit'),
+            'index' => ListDevices::route('/'),
+            'create' => CreateDevice::route('/create'),
+            'edit' => EditDevice::route('/{record}/edit'),
         ];
     }
 }

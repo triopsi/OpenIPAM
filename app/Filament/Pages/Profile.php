@@ -4,22 +4,23 @@ namespace App\Filament\Pages;
 
 use App\Models\User;
 use App\Notifications\EmailTwoFactorCode;
-use Filament\Forms\Components\Actions\Action;
+use Filament\Actions\Action;
 use Filament\Forms\Components\Placeholder;
-use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 
 class Profile extends Page
 {
-    protected static ?string $navigationIcon = 'heroicon-o-user-circle';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-user-circle';
 
-    protected static string $view = 'filament.pages.profile';
+    protected string $view = 'filament.pages.profile';
 
     protected static ?string $title = null;
 
@@ -90,7 +91,7 @@ class Profile extends Page
     /**
      * Get all forms available on this page.
      *
-     * @return array<string, \Filament\Forms\Form> Array of form instances
+     * @return array<string, Schema> Array of form instances
      */
     protected function getForms(): array
     {
@@ -104,12 +105,12 @@ class Profile extends Page
     /**
      * Get the profile information form.
      *
-     * @return \Filament\Forms\Form The profile form with personal data fields
+     * @return Schema The profile form with personal data fields
      */
-    protected function getProfileForm(): Form
+    protected function getProfileForm(): Schema
     {
         return $this->makeForm()
-            ->schema([
+            ->components([
                 Section::make(__('common.fields.personal_data'))
                     ->schema([
                         TextInput::make('name')
@@ -123,7 +124,7 @@ class Profile extends Page
                             ->suffixIcon('heroicon-o-envelope')
                             ->required()
                             ->maxLength(255),
-                        \Filament\Forms\Components\Select::make('language')
+                        Select::make('language')
                             ->label(__('common.navigation.language'))
                             ->options(collect(config('languages.supported'))->mapWithKeys(fn ($lang, $code) => [
                                 $code => $lang['native_name'],
@@ -132,7 +133,7 @@ class Profile extends Page
                             ->required()
                             ->suffixIcon('heroicon-o-language')
                             ->helperText(__('common.fields.language_helper')),
-                        \Filament\Forms\Components\Select::make('gravatar_type')
+                        Select::make('gravatar_type')
                             ->label(__('common.fields.gravatar_type'))
                             ->options([
                                 'mp' => __('common.fields.gravatar_options.mp'),
@@ -154,12 +155,12 @@ class Profile extends Page
     /**
      * Get the password change form.
      *
-     * @return \Filament\Forms\Form The password form with validation rules
+     * @return Schema The password form with validation rules
      */
-    protected function getPasswordForm(): Form
+    protected function getPasswordForm(): Schema
     {
         return $this->makeForm()
-            ->schema([
+            ->components([
                 Section::make(__('profile.change_password'))
                     ->schema([
                         TextInput::make('current_password')
@@ -193,15 +194,15 @@ class Profile extends Page
      *
      * Returns different form schemas based on verification state.
      *
-     * @return \Filament\Forms\Form The 2FA form (status or verification)
+     * @return Schema The 2FA form (status or verification)
      */
-    protected function getTwoFactorForm(): Form
+    protected function getTwoFactorForm(): Schema
     {
         $user = Auth::user();
 
         if ($this->isVerifying) {
             return $this->makeForm()
-                ->schema([
+                ->components([
                     Section::make('Code eingeben')
                         ->description('Geben Sie den 6-stelligen Code ein, den wir an Ihre E-Mail gesendet haben.')
                         ->schema([
@@ -228,7 +229,7 @@ class Profile extends Page
         }
 
         return $this->makeForm()
-            ->schema([
+            ->components([
                 Section::make('E-Mail Zwei-Faktor-Authentifizierung')
                     ->description('Schützen Sie Ihr Konto mit einem Code, der per E-Mail gesendet wird.')
                     ->schema([
@@ -400,7 +401,7 @@ class Profile extends Page
      *
      * Returns enable or disable actions based on current 2FA status.
      *
-     * @return array<\Filament\Forms\Components\Actions\Action> Array of form actions
+     * @return array<Action> Array of form actions
      */
     protected function getTwoFactorActions(): array
     {

@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\IpAddressGroupResource\Pages;
 
 use App\Filament\Resources\IpAddressGroupResource;
-use Filament\Actions;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListIpAddressGroups extends ListRecords
@@ -13,7 +13,7 @@ class ListIpAddressGroups extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            CreateAction::make(),
         ];
     }
 }

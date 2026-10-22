@@ -3,12 +3,27 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\IpAddressResource\Pages;
-use App\Filament\Resources\IpAddressResource\RelationManagers;
+use App\Filament\Resources\IpAddressResource\Pages\CreateIpAddress;
+use App\Filament\Resources\IpAddressResource\Pages\EditIpAddress;
+use App\Filament\Resources\IpAddressResource\Pages\ListIpAddresses;
+use App\Filament\Resources\IpAddressResource\RelationManagers\DevicesRelationManager;
 use App\Models\IpAddress;
-use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Actions\BulkAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
+use Filament\Forms\Components\Radio;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Resources\RelationManager;
 use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
 /**
@@ -34,11 +49,11 @@ class IpAddressResource extends Resource
 {
     protected static ?string $model = IpAddress::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-globe-alt';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-globe-alt';
 
     protected static ?string $navigationLabel = null;
 
-    protected static ?string $navigationGroup = null;
+    protected static string|\UnitEnum|null $navigationGroup = null;
 
     protected static ?string $modelLabel = null;
 
@@ -73,23 +88,23 @@ class IpAddressResource extends Resource
      * rules, layout, and any default values or reactive behavior for creating
      * and editing IP address records.
      *
-     * @param  \Filament\Forms\Form  $form  The form instance to configure.
-     * @return \Filament\Forms\Form The configured form instance.
+     * @param  Schema  $schema  The form instance to configure.
+     * @return Schema The configured form instance.
      */
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Section::make(__('ip_addresses.sections.ip_information'))
+        return $schema
+            ->components([
+                Section::make(__('ip_addresses.sections.ip_information'))
                     ->schema([
-                        Forms\Components\Select::make('group_id')
+                        Select::make('group_id')
                             ->label(__('ip_addresses.fields.group'))
                             ->relationship('group', 'name')
                             ->searchable()
                             ->preload()
                             ->nullable()
                             ->columnSpanFull(),
-                        Forms\Components\Radio::make('generate_mode')
+                        Radio::make('generate_mode')
                             ->label(__('ip_addresses.fields.generate_mode'))
                             ->options([
                                 'single' => __('ip_addresses.generate_modes.single'),
@@ -97,32 +112,32 @@ class IpAddressResource extends Resource
                             ])
                             ->default('single')
                             ->live(),
-                        Forms\Components\TextInput::make('ip_address')
+                        TextInput::make('ip_address')
                             ->label(__('ip_addresses.fields.ip_address'))
                             ->requiredWithout('subnet_input')
                             ->maxLength(255)
                             ->placeholder('192.168.1.1')
                             ->visible(fn ($get) => $get('generate_mode') === 'single'),
-                        Forms\Components\TextInput::make('subnet_input')
+                        TextInput::make('subnet_input')
                             ->label(__('ip_addresses.fields.subnet_input'))
                             ->requiredWithout('ip_address')
                             ->placeholder('192.168.1.0/24')
                             ->visible(fn ($get) => $get('generate_mode') === 'subnet'),
-                        Forms\Components\TextInput::make('subnet_start')
+                        TextInput::make('subnet_start')
                             ->label(__('ip_addresses.fields.subnet_start'))
                             ->numeric()
                             ->minValue(1)
                             ->placeholder(__('ip_addresses.placeholders.subnet_start'))
                             ->helperText(__('ip_addresses.helpers.subnet_start'))
                             ->visible(fn ($get) => $get('generate_mode') === 'subnet'),
-                        Forms\Components\TextInput::make('subnet_count')
+                        TextInput::make('subnet_count')
                             ->label(__('ip_addresses.fields.subnet_count'))
                             ->numeric()
                             ->minValue(1)
                             ->placeholder(__('ip_addresses.placeholders.subnet_count'))
                             ->helperText(__('ip_addresses.helpers.subnet_count'))
                             ->visible(fn ($get) => $get('generate_mode') === 'subnet'),
-                        Forms\Components\Select::make('version')
+                        Select::make('version')
                             ->label(__('ip_addresses.fields.version'))
                             ->required()
                             ->options([
@@ -130,7 +145,7 @@ class IpAddressResource extends Resource
                                 6 => 'IPv6',
                             ])
                             ->default(4),
-                        Forms\Components\Select::make('status')
+                        Select::make('status')
                             ->label(__('ip_addresses.fields.status'))
                             ->required()
                             ->options([
@@ -142,21 +157,21 @@ class IpAddressResource extends Resource
                             ->helperText(__('ip_addresses.helpers.status')),
                     ])->columns(3),
 
-                Forms\Components\Section::make(__('ip_addresses.sections.network_config'))
+                Section::make(__('ip_addresses.sections.network_config'))
                     ->schema([
-                        Forms\Components\TextInput::make('subnet')
+                        TextInput::make('subnet')
                             ->label(__('ip_addresses.fields.subnet'))
                             ->maxLength(255)
                             ->placeholder('255.255.255.0 or /24'),
-                        Forms\Components\TextInput::make('gateway')
+                        TextInput::make('gateway')
                             ->label(__('ip_addresses.fields.gateway'))
                             ->maxLength(255)
                             ->placeholder('192.168.1.1'),
                     ])->columns(2),
 
-                Forms\Components\Section::make(__('ip_addresses.sections.description'))
+                Section::make(__('ip_addresses.sections.description'))
                     ->schema([
-                        Forms\Components\Textarea::make('description')
+                        Textarea::make('description')
                             ->label(__('ip_addresses.fields.description'))
                             ->rows(3)
                             ->columnSpanFull(),
@@ -171,21 +186,21 @@ class IpAddressResource extends Resource
      * This method receives a Table builder, applies the resource-specific configuration,
      * and returns the configured Table instance for rendering the resource index.
      *
-     * @param  \Filament\Tables\Table  $table  The table builder to configure.
-     * @return \Filament\Tables\Table The configured table instance.
+     * @param  Table  $table  The table builder to configure.
+     * @return Table The configured table instance.
      */
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('ip_address')
+                TextColumn::make('ip_address')
                     ->label(__('ip_addresses.table.ip_address'))
                     ->searchable()
                     ->sortable()
                     ->copyable()
                     ->copyMessage(__('ip_addresses.table.ip_copied'))
                     ->copyMessageDuration(1500),
-                Tables\Columns\TextColumn::make('version')
+                TextColumn::make('version')
                     ->label(__('ip_addresses.table.version'))
                     ->badge()
                     ->color(fn (int $state): string => match ($state) {
@@ -195,22 +210,22 @@ class IpAddressResource extends Resource
                     })
                     ->formatStateUsing(fn (int $state): string => "IPv{$state}")
                     ->sortable(),
-                Tables\Columns\TextColumn::make('group.name')
+                TextColumn::make('group.name')
                     ->label(__('ip_addresses.table.group'))
                     ->badge()
                     ->color('primary')
                     ->placeholder(__('ip_addresses.table.no_group'))
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('subnet')
+                TextColumn::make('subnet')
                     ->label(__('ip_addresses.table.subnet'))
                     ->searchable()
                     ->toggleable(),
-                Tables\Columns\TextColumn::make('gateway')
+                TextColumn::make('gateway')
                     ->label(__('ip_addresses.table.gateway'))
                     ->searchable()
                     ->toggleable(),
-                Tables\Columns\TextColumn::make('status')
+                TextColumn::make('status')
                     ->label(__('ip_addresses.table.status'))
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
@@ -226,40 +241,40 @@ class IpAddressResource extends Resource
                         default => $state,
                     })
                     ->sortable(),
-                Tables\Columns\TextColumn::make('devices.name')
+                TextColumn::make('devices.name')
                     ->label(__('ip_addresses.table.assigned_devices'))
                     ->badge()
                     ->separator(',')
                     ->toggleable(),
-                Tables\Columns\TextColumn::make('description')
+                TextColumn::make('description')
                     ->label(__('ip_addresses.table.description'))
                     ->limit(50)
                     ->toggleable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->label(__('ip_addresses.table.created_at'))
                     ->dateTime('d.m.Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
+                TextColumn::make('updated_at')
                     ->label(__('ip_addresses.table.updated_at'))
                     ->dateTime('d.m.Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('group_id')
+                SelectFilter::make('group_id')
                     ->label(__('ip_addresses.filters.group'))
                     ->relationship('group', 'name')
                     ->searchable()
                     ->preload(),
-                Tables\Filters\SelectFilter::make('version')
+                SelectFilter::make('version')
                     ->label(__('ip_addresses.filters.version'))
                     ->options([
                         4 => 'IPv4',
                         6 => 'IPv6',
                     ]),
-                Tables\Filters\SelectFilter::make('status')
+                SelectFilter::make('status')
                     ->label(__('ip_addresses.filters.status'))
                     ->options([
                         'available' => __('ip_addresses.statuses.available'),
@@ -267,20 +282,20 @@ class IpAddressResource extends Resource
                         'reserved' => __('ip_addresses.statuses.reserved'),
                     ]),
             ])
-            ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+            ->recordActions([
+                ViewAction::make(),
+                EditAction::make(),
+                DeleteAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
+            ->toolbarActions([
+                BulkActionGroup::make([
                     // Bulk Edit Gateway
-                    Tables\Actions\BulkAction::make('bulk_edit_gateway')
+                    BulkAction::make('bulk_edit_gateway')
                         ->label(__('ip_addresses.bulk_actions.edit_gateway'))
                         ->icon('heroicon-o-wifi')
                         ->color('warning')
                         ->form([
-                            Forms\Components\TextInput::make('gateway')
+                            TextInput::make('gateway')
                                 ->label(__('ip_addresses.bulk_actions.new_gateway'))
                                 ->required()
                                 ->placeholder('192.168.1.1')
@@ -296,12 +311,12 @@ class IpAddressResource extends Resource
                         ->deselectRecordsAfterCompletion(),
 
                     // Bulk Edit IP Group
-                    Tables\Actions\BulkAction::make('bulk_edit_group')
+                    BulkAction::make('bulk_edit_group')
                         ->label(__('ip_addresses.bulk_actions.edit_group'))
                         ->icon('heroicon-o-folder')
                         ->color('primary')
                         ->form([
-                            Forms\Components\Select::make('group_id')
+                            Select::make('group_id')
                                 ->label(__('ip_addresses.bulk_actions.new_group'))
                                 ->relationship('group', 'name')
                                 ->searchable()
@@ -319,12 +334,12 @@ class IpAddressResource extends Resource
                         ->deselectRecordsAfterCompletion(),
 
                     // Bulk Edit Subnet
-                    Tables\Actions\BulkAction::make('bulk_edit_subnet')
+                    BulkAction::make('bulk_edit_subnet')
                         ->label(__('ip_addresses.bulk_actions.edit_subnet'))
                         ->icon('heroicon-o-globe-alt')
                         ->color('info')
                         ->form([
-                            Forms\Components\TextInput::make('subnet')
+                            TextInput::make('subnet')
                                 ->label(__('ip_addresses.bulk_actions.new_subnet'))
                                 ->required()
                                 ->placeholder('255.255.255.0 oder /24')
@@ -340,12 +355,12 @@ class IpAddressResource extends Resource
                         ->deselectRecordsAfterCompletion(),
 
                     // Bulk Edit Status
-                    Tables\Actions\BulkAction::make('bulk_edit_status')
+                    BulkAction::make('bulk_edit_status')
                         ->label(__('ip_addresses.bulk_actions.edit_status'))
                         ->icon('heroicon-o-signal')
                         ->color('success')
                         ->form([
-                            Forms\Components\Select::make('status')
+                            Select::make('status')
                                 ->label(__('ip_addresses.bulk_actions.new_status'))
                                 ->required()
                                 ->options([
@@ -365,12 +380,12 @@ class IpAddressResource extends Resource
                         ->deselectRecordsAfterCompletion(),
 
                     // Bulk Edit Description
-                    Tables\Actions\BulkAction::make('bulk_edit_description')
+                    BulkAction::make('bulk_edit_description')
                         ->label(__('ip_addresses.bulk_actions.edit_description'))
                         ->icon('heroicon-o-document-text')
                         ->color('gray')
                         ->form([
-                            Forms\Components\Select::make('description_action')
+                            Select::make('description_action')
                                 ->label(__('ip_addresses.bulk_actions.action'))
                                 ->required()
                                 ->options([
@@ -381,7 +396,7 @@ class IpAddressResource extends Resource
                                 ])
                                 ->default('replace')
                                 ->live(),
-                            Forms\Components\Textarea::make('description')
+                            Textarea::make('description')
                                 ->label(__('ip_addresses.fields.description'))
                                 ->rows(3)
                                 ->placeholder(__('ip_addresses.bulk_actions.description_placeholder'))
@@ -403,33 +418,33 @@ class IpAddressResource extends Resource
                         ->deselectRecordsAfterCompletion(),
 
                     // Bulk Advanced Edit
-                    Tables\Actions\BulkAction::make('bulk_advanced_edit')
+                    BulkAction::make('bulk_advanced_edit')
                         ->label(__('ip_addresses.bulk_actions.advanced_edit'))
                         ->icon('heroicon-o-cog-6-tooth')
                         ->color('danger')
                         ->form([
-                            Forms\Components\Section::make(__('ip_addresses.bulk_actions.network_settings'))
+                            Section::make(__('ip_addresses.bulk_actions.network_settings'))
                                 ->schema([
-                                    Forms\Components\TextInput::make('gateway')
+                                    TextInput::make('gateway')
                                         ->label(__('ip_addresses.bulk_actions.gateway_optional'))
                                         ->placeholder('192.168.1.1')
                                         ->maxLength(255),
-                                    Forms\Components\TextInput::make('subnet')
+                                    TextInput::make('subnet')
                                         ->label(__('ip_addresses.bulk_actions.subnet_optional'))
                                         ->placeholder('255.255.255.0 or /24')
                                         ->maxLength(255),
                                 ])->columns(2),
 
-                            Forms\Components\Section::make(__('ip_addresses.bulk_actions.assignment'))
+                            Section::make(__('ip_addresses.bulk_actions.assignment'))
                                 ->schema([
-                                    Forms\Components\Select::make('group_id')
+                                    Select::make('group_id')
                                         ->label(__('ip_addresses.bulk_actions.group_optional'))
                                         ->relationship('group', 'name')
                                         ->searchable()
                                         ->preload()
                                         ->nullable()
                                         ->placeholder(__('ip_addresses.bulk_actions.leave_unchanged')),
-                                    Forms\Components\Select::make('status')
+                                    Select::make('status')
                                         ->label(__('ip_addresses.bulk_actions.status_optional'))
                                         ->options([
                                             'available' => __('ip_addresses.statuses.available'),
@@ -439,9 +454,9 @@ class IpAddressResource extends Resource
                                         ->placeholder(__('ip_addresses.bulk_actions.leave_unchanged')),
                                 ])->columns(2),
 
-                            Forms\Components\Section::make(__('ip_addresses.fields.description'))
+                            Section::make(__('ip_addresses.fields.description'))
                                 ->schema([
-                                    Forms\Components\Textarea::make('description')
+                                    Textarea::make('description')
                                         ->label(__('ip_addresses.bulk_actions.description_optional'))
                                         ->rows(3)
                                         ->placeholder(__('ip_addresses.bulk_actions.description_no_change')),
@@ -464,7 +479,7 @@ class IpAddressResource extends Resource
                         })
                         ->deselectRecordsAfterCompletion(),
 
-                    Tables\Actions\DeleteBulkAction::make(),
+                    DeleteBulkAction::make(),
                 ]),
             ])
             ->defaultSort('created_at', 'desc');
@@ -476,12 +491,12 @@ class IpAddressResource extends Resource
      * Returns an array of relation managers that register the relationships
      * displayed and managed on this Filament resource's pages.
      *
-     * @return array<int, class-string<\Filament\Resources\RelationManager>> Relation manager class names
+     * @return array<int, class-string<RelationManager>> Relation manager class names
      */
     public static function getRelations(): array
     {
         return [
-            RelationManagers\DevicesRelationManager::class,
+            DevicesRelationManager::class,
         ];
     }
 
@@ -497,9 +512,9 @@ class IpAddressResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListIpAddresses::route('/'),
-            'create' => Pages\CreateIpAddress::route('/create'),
-            'edit' => Pages\EditIpAddress::route('/{record}/edit'),
+            'index' => ListIpAddresses::route('/'),
+            'create' => CreateIpAddress::route('/create'),
+            'edit' => EditIpAddress::route('/{record}/edit'),
         ];
     }
 }

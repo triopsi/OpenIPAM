@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use League\Csv\Reader;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
@@ -401,7 +402,7 @@ class DeviceCsvImportTest extends TestCase
     {
         $filePath = Storage::path($data['csv_file']);
 
-        $csv = \League\Csv\Reader::createFromPath($filePath, 'r');
+        $csv = Reader::createFromPath($filePath, 'r');
         $delimiter = $data['delimiter'] === '\t' ? "\t" : $data['delimiter'];
         $csv->setDelimiter($delimiter);
 

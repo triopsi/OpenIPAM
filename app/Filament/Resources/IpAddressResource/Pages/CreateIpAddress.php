@@ -7,6 +7,7 @@ use App\Models\IpAddress;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Support\Str;
+use InvalidArgumentException;
 
 class CreateIpAddress extends CreateRecord
 {
@@ -94,7 +95,7 @@ class CreateIpAddress extends CreateRecord
      * @return array{start:string,end:string} Array with 'start' and 'end' keys containing
      *                                        the first and last IP addresses of the range.
      *
-     * @throws \InvalidArgumentException If the provided CIDR string is invalid or cannot be parsed.
+     * @throws InvalidArgumentException If the provided CIDR string is invalid or cannot be parsed.
      */
     protected function calculateIpRange(string $cidr): array
     {

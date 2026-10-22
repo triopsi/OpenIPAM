@@ -9,7 +9,7 @@ use Filament\Widgets\Widget;
 
 class DeviceIpTreeWidget extends Widget
 {
-    protected static string $view = 'filament.widgets.device-ip-tree-widget';
+    protected string $view = 'filament.widgets.device-ip-tree-widget';
 
     protected static ?int $sort = 1;
 

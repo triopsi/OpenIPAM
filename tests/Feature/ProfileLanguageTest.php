@@ -2,8 +2,11 @@
 
 namespace Tests\Feature;
 
+use App\Http\Middleware\SetLocaleMiddleware;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Tests\TestCase;
 
 class ProfileLanguageTest extends TestCase
@@ -56,15 +59,15 @@ class ProfileLanguageTest extends TestCase
         $this->actingAs($user);
 
         // Create middleware instance and test directly
-        $middleware = new \App\Http\Middleware\SetLocaleMiddleware;
+        $middleware = new SetLocaleMiddleware;
 
-        $request = \Illuminate\Http\Request::create('/admin/dashboard');
+        $request = Request::create('/admin/dashboard');
         $request->setUserResolver(function () use ($user) {
             return $user;
         });
 
         $response = $middleware->handle($request, function ($req) {
-            return new \Illuminate\Http\Response('OK');
+            return new Response('OK');
         });
 
         $this->assertEquals('de', app()->getLocale());
