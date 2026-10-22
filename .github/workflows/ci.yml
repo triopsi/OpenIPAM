@@ -162,6 +162,7 @@ jobs:
         with:
           context: .
           target: production
+          pull: true
           load: true
           tags: openipam:ci
           cache-from: type=gha

@@ -1,7 +1,9 @@
 # syntax=docker/dockerfile:1
-FROM php:8.4-apache-bookworm AS base
+FROM php:8.4-apache-trixie AS base
 WORKDIR /var/www/html
-RUN apt-get update && apt-get install -y --no-install-recommends \
+# Apply distribution security fixes even when the upstream image predates them.
+RUN apt-get update && apt-get upgrade -y --no-install-recommends \
+    && apt-get install -y --no-install-recommends \
     curl git unzip libicu-dev libonig-dev libpng-dev libpq-dev libsqlite3-dev libzip-dev \
     && docker-php-ext-install -j"$(nproc)" bcmath gd intl mbstring opcache pcntl pdo_mysql pdo_pgsql pdo_sqlite zip \
     && a2enmod rewrite headers \
@@ -13,7 +15,7 @@ COPY --from=composer:2 /usr/bin/composer /usr/local/bin/composer
 COPY .docker/apache.conf /etc/apache2/sites-available/000-default.conf
 EXPOSE 8080
 
-FROM node:24-bookworm-slim AS node
+FROM node:24-trixie-slim AS node
 
 FROM base AS development
 ENV COMPOSER_ALLOW_SUPERUSER=1
