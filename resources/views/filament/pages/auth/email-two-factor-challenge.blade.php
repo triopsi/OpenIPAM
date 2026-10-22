@@ -1,5 +1,5 @@
 <x-filament-panels::page.simple>
-    <x-filament-panels::form wire:submit="verify">
+    <form wire:submit="verify" class="space-y-6">
         {{ $this->form }}
 
         <x-filament::button
@@ -18,5 +18,5 @@
                 {{ __('auth.two_factor.resend_code') }}
             </x-filament::link>
         </div>
-    </x-filament-panels::form>
+    </form>
 </x-filament-panels::page.simple>

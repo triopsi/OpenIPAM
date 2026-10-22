@@ -101,7 +101,9 @@ class EmailTwoFactorChallenge extends SimplePage
             ->required()
             ->autofocus()
             ->length(6)
-            ->numeric()
+            ->regex('/^[0-9]{6}$/')
+            ->inputMode('numeric')
+            ->autocomplete('one-time-code')
             ->placeholder('000000')
             ->helperText(__('auth.two_factor.code_helper'));
     }
