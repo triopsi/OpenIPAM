@@ -1,6 +1,12 @@
 <?php
 
 return [
+    'tabs' => [
+        'account' => 'Account',
+        'password' => 'Password',
+        'security' => 'Two-factor authentication',
+    ],
+    'back_to_dashboard' => 'Back to dashboard',
     'title' => 'Profile',
     'personal_data' => 'Personal Data',
     'change_password' => 'Change Password',
@@ -24,4 +30,18 @@ return [
     '2fa_disabled_success' => 'Two-Factor Authentication disabled successfully.',
     'invalid_code' => 'Invalid verification code.',
     'code_expired' => 'Verification code has expired.',
+    'save_profile' => 'Save profile',
+    'verify' => 'Verify',
+    'two_factor_description' => 'Protect your account with a code sent by email.',
+    'enabled' => '✓ Enabled',
+    'disabled' => '✗ Disabled',
+    'enabled_title' => 'Two-factor authentication enabled',
+    'disabled_title' => 'Two-factor authentication disabled',
+    'code_sent_title' => 'Code sent',
+    'invalid_code_title' => 'Invalid code',
+    'invalid_or_expired_code' => 'The code is invalid or has expired.',
+    'enable' => 'Enable',
+    'disable' => 'Disable',
+    'disable_confirmation' => 'We will email you a verification code to confirm disabling two-factor authentication.',
+    'enable_confirmation' => 'Once enabled, you will receive a code by email every time you sign in.',
 ];

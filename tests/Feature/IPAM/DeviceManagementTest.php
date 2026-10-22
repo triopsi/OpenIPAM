@@ -12,6 +12,11 @@ class DeviceManagementTest extends TestCase
 {
     use RefreshDatabase;
 
+    /**
+     * Verify device can be created with required fields.
+     *
+     * Expect: The created device retains its required name, hostname, MAC address, type and active status.
+     */
     public function test_device_can_be_created_with_required_fields(): void
     {
         $user = User::factory()->create();
@@ -37,6 +42,11 @@ class DeviceManagementTest extends TestCase
         $this->assertEquals('active', $device->status);
     }
 
+    /**
+     * Verify device types are properly categorized.
+     *
+     * Expect: Each device retains the configured device-type value.
+     */
     public function test_device_types_are_properly_categorized(): void
     {
         $user = User::factory()->create();
@@ -54,6 +64,11 @@ class DeviceManagementTest extends TestCase
         }
     }
 
+    /**
+     * Verify device status lifecycle.
+     *
+     * Expect: Each status update is persisted when the device is refreshed.
+     */
     public function test_device_status_lifecycle(): void
     {
         $user = User::factory()->create();
@@ -68,6 +83,11 @@ class DeviceManagementTest extends TestCase
         }
     }
 
+    /**
+     * Verify device can have multiple network interfaces.
+     *
+     * Expect: Three address relationships are retained and the designated primary address is returned.
+     */
     public function test_device_can_have_multiple_network_interfaces(): void
     {
         $user = User::factory()->create();
@@ -93,6 +113,11 @@ class DeviceManagementTest extends TestCase
         $this->assertEquals('192.168.1.10', $device->primaryIpAddress()->ip_address);
     }
 
+    /**
+     * Verify device location tracking.
+     *
+     * Expect: Each device retains its supplied location string.
+     */
     public function test_device_location_tracking(): void
     {
         $user = User::factory()->create();
@@ -115,6 +140,11 @@ class DeviceManagementTest extends TestCase
         }
     }
 
+    /**
+     * Document the current storage behavior for duplicate MAC addresses.
+     *
+     * Expect: Both device records retain the same MAC address; uniqueness enforcement is not tested.
+     */
     public function test_device_mac_address_uniqueness(): void
     {
         $user = User::factory()->create();
@@ -138,6 +168,11 @@ class DeviceManagementTest extends TestCase
         $this->assertEquals($macAddress, $device2->mac_address);
     }
 
+    /**
+     * Verify device hostname format validation.
+     *
+     * Expect: Every valid hostname fixture is stored without alteration.
+     */
     public function test_device_hostname_format_validation(): void
     {
         $user = User::factory()->create();
@@ -161,6 +196,11 @@ class DeviceManagementTest extends TestCase
         }
     }
 
+    /**
+     * Verify device can be filtered by type.
+     *
+     * Expect: Type queries return two servers, one workstation and one network device.
+     */
     public function test_device_can_be_filtered_by_type(): void
     {
         $user = User::factory()->create();
@@ -182,6 +222,11 @@ class DeviceManagementTest extends TestCase
         $this->assertCount(1, $networkDevices);
     }
 
+    /**
+     * Verify device can be searched by name or hostname.
+     *
+     * Expect: Name and hostname queries return the expected matching device counts.
+     */
     public function test_device_can_be_searched_by_name_or_hostname(): void
     {
         $user = User::factory()->create();
@@ -215,6 +260,11 @@ class DeviceManagementTest extends TestCase
         $this->assertCount(3, $companyDevices);
     }
 
+    /**
+     * Verify device maintenance mode.
+     *
+     * Expect: A device can move into maintenance and return to active status.
+     */
     public function test_device_maintenance_mode(): void
     {
         $user = User::factory()->create();
@@ -230,6 +280,11 @@ class DeviceManagementTest extends TestCase
         $this->assertEquals('active', $device->fresh()->status);
     }
 
+    /**
+     * Verify device decommissioning.
+     *
+     * Expect: Decommissioning detaches the address and makes it available again.
+     */
     public function test_device_decommissioning(): void
     {
         $user = User::factory()->create();

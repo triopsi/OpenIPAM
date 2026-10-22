@@ -3,6 +3,7 @@
 namespace App\Console\Commands\User;
 
 use App\Models\User;
+use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
@@ -114,7 +115,7 @@ class UpdateUserCommand extends Command
             }
 
             return 0;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error("Error updating user: {$e->getMessage()}");
 
             return 1;

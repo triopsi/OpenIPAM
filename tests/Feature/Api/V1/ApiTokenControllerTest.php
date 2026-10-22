@@ -39,6 +39,8 @@ class ApiTokenControllerTest extends TestCase
     /**
      * Test listing user's API tokens.
      *
+     * Expect: The response contains the authenticated user's three tokens with token metadata.
+     *
      * @return void
      */
     public function test_can_list_user_api_tokens()
@@ -72,6 +74,8 @@ class ApiTokenControllerTest extends TestCase
 
     /**
      * Test creating a new API token.
+     *
+     * Expect: HTTP 201 returns token details and persists a token belonging to the caller.
      *
      * @return void
      */
@@ -111,6 +115,8 @@ class ApiTokenControllerTest extends TestCase
     /**
      * Test creating token with custom expiration.
      *
+     * Expect: The saved token has the requested future expiration timestamp.
+     *
      * @return void
      */
     public function test_can_create_token_with_custom_expiration()
@@ -138,6 +144,8 @@ class ApiTokenControllerTest extends TestCase
     /**
      * Test creating never expiring token.
      *
+     * Expect: The created token has no expiration date when never_expires is selected.
+     *
      * @return void
      */
     public function test_can_create_never_expiring_token()
@@ -162,6 +170,8 @@ class ApiTokenControllerTest extends TestCase
 
     /**
      * Test creating token with custom abilities.
+     *
+     * Expect: The created token persists the requested ability list.
      *
      * @return void
      */
@@ -189,6 +199,8 @@ class ApiTokenControllerTest extends TestCase
     /**
      * Test token validation errors.
      *
+     * Expect: HTTP 422 identifies invalid token name and expiration fields.
+     *
      * @return void
      */
     public function test_cannot_create_token_with_invalid_data()
@@ -206,6 +218,8 @@ class ApiTokenControllerTest extends TestCase
     /**
      * Test token expiration validation.
      *
+     * Expect: HTTP 422 rejects an expiration date in the past.
+     *
      * @return void
      */
     public function test_cannot_create_token_with_past_expiration()
@@ -222,6 +236,8 @@ class ApiTokenControllerTest extends TestCase
 
     /**
      * Test revoking an API token.
+     *
+     * Expect: HTTP 200 confirms revocation and removes the token record.
      *
      * @return void
      */
@@ -245,6 +261,8 @@ class ApiTokenControllerTest extends TestCase
     /**
      * Test revoking non-existent token.
      *
+     * Expect: Revoking an unknown token returns HTTP 404.
+     *
      * @return void
      */
     public function test_cannot_revoke_nonexistent_token()
@@ -257,6 +275,8 @@ class ApiTokenControllerTest extends TestCase
 
     /**
      * Test cannot revoke another user's token.
+     *
+     * Expect: HTTP 404 leaves another user's token in the database.
      *
      * @return void
      */
@@ -278,6 +298,8 @@ class ApiTokenControllerTest extends TestCase
 
     /**
      * Test token creation with default expiration.
+     *
+     * Expect: A token without an explicit expiration receives the default future expiration.
      *
      * @return void
      */
@@ -308,6 +330,8 @@ class ApiTokenControllerTest extends TestCase
     /**
      * Test unauthorized access to token endpoints.
      *
+     * Expect: Unauthenticated token listing, creation and revocation each return HTTP 401.
+     *
      * @return void
      */
     public function test_unauthorized_access_denied()
@@ -326,6 +350,8 @@ class ApiTokenControllerTest extends TestCase
 
     /**
      * Test token response includes plain text token.
+     *
+     * Expect: Token creation returns a nonempty plain-text token to the caller.
      *
      * @return void
      */
@@ -347,6 +373,8 @@ class ApiTokenControllerTest extends TestCase
     /**
      * Test token list does not include plain text tokens.
      *
+     * Expect: Token listing does not expose plain-text token values.
+     *
      * @return void
      */
     public function test_token_list_does_not_include_plain_text()
@@ -366,6 +394,8 @@ class ApiTokenControllerTest extends TestCase
 
     /**
      * Test token expiry status.
+     *
+     * Expect: Expired and unexpired tokens expose their respective expiration status.
      *
      * @return void
      */

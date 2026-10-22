@@ -1,0 +1,39 @@
+name: Feature request
+description: Suggest a feature or improvement for OpenIPAM.
+title: "[Feature]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Have an idea for OpenIPAM? Tell us about the problem it would solve and how it would help your network.
+  - type: checkboxes
+    id: existing-issues
+    attributes:
+      label: Before submitting
+      options:
+        - label: I have searched the existing issues for similar suggestions.
+          required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would this solve?
+      description: Describe your use case and what is difficult or missing today.
+    validations:
+      required: true
+  - type: textarea
+    id: proposed-solution
+    attributes:
+      label: Proposed solution
+      description: Describe how you would like the feature to work from a user's perspective.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Have you tried a workaround or considered another approach?
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional context
+      description: Add examples, mockups or screenshots if helpful. Use fictional network data.

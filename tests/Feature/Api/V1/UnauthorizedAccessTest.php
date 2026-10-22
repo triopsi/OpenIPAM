@@ -11,6 +11,8 @@ class UnauthorizedAccessTest extends TestCase
 
     /**
      * Test unauthorized access to protected API routes.
+     *
+     * Expect: Every protected route in the fixture list rejects guests with HTTP 401.
      */
     public function test_unauthorized_access_to_protected_routes()
     {
@@ -41,6 +43,8 @@ class UnauthorizedAccessTest extends TestCase
 
     /**
      * Test invalid token access.
+     *
+     * Expect: A request carrying an invalid bearer token returns HTTP 401.
      */
     public function test_invalid_token_access()
     {

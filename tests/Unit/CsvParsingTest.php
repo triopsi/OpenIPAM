@@ -17,6 +17,11 @@ class CsvParsingTest extends TestCase
         Storage::fake('local');
     }
 
+    /**
+     * Parse CSV with comma delimiter.
+     *
+     * Expect: Two records are parsed and their named columns retain the expected device values.
+     */
     #[Test]
     public function it_can_parse_csv_with_comma_delimiter()
     {
@@ -38,6 +43,11 @@ class CsvParsingTest extends TestCase
         $this->assertEquals('router', $recordsArray[0]['Type']);
     }
 
+    /**
+     * Parse CSV with semicolon delimiter.
+     *
+     * Expect: Two semicolon-separated records expose the expected name and hostname columns.
+     */
     #[Test]
     public function it_can_parse_csv_with_semicolon_delimiter()
     {
@@ -58,6 +68,11 @@ class CsvParsingTest extends TestCase
         $this->assertEquals('router01.example.com', $recordsArray[0]['Hostname']);
     }
 
+    /**
+     * Parse CSV with tab delimiter.
+     *
+     * Expect: Two tab-separated records expose the expected name and hostname columns.
+     */
     #[Test]
     public function it_can_parse_csv_with_tab_delimiter()
     {
@@ -78,6 +93,11 @@ class CsvParsingTest extends TestCase
         $this->assertEquals('router01.example.com', $recordsArray[0]['Hostname']);
     }
 
+    /**
+     * Parse CSV without header.
+     *
+     * Expect: Two headerless records remain accessible by numeric column index.
+     */
     #[Test]
     public function it_can_parse_csv_without_header()
     {
@@ -97,6 +117,11 @@ class CsvParsingTest extends TestCase
         $this->assertEquals('router', $records[0][2]);
     }
 
+    /**
+     * Get limited preview of CSV.
+     *
+     * Expect: The preview contains the header and the first two data rows only.
+     */
     #[Test]
     public function it_can_get_limited_preview_of_csv()
     {
@@ -123,6 +148,11 @@ class CsvParsingTest extends TestCase
         $this->assertEquals('Router-02', $records[2][0]); // Second data row
     }
 
+    /**
+     * Check handling of empty CSV file.
+     *
+     * Expect: Parsing an empty file returns no records.
+     */
     #[Test]
     public function it_handles_empty_csv_file()
     {
@@ -139,6 +169,11 @@ class CsvParsingTest extends TestCase
         $this->assertCount(0, $records);
     }
 
+    /**
+     * Check handling of CSV with quoted fields.
+     *
+     * Expect: Quoted column names and field values preserve their embedded commas.
+     */
     #[Test]
     public function it_handles_csv_with_quoted_fields()
     {
@@ -160,6 +195,11 @@ class CsvParsingTest extends TestCase
         $this->assertEquals('Main router, very important', $recordsArray[0]['Description with, comma']);
     }
 
+    /**
+     * Check handling of CSV with special characters.
+     *
+     * Expect: German characters in device names and descriptions survive parsing unchanged.
+     */
     #[Test]
     public function it_handles_csv_with_special_characters()
     {

@@ -4,16 +4,16 @@ namespace App\Filament\Pages\Auth;
 
 use App\Models\User;
 use App\Notifications\EmailTwoFactorCode;
-use Filament\Forms\Components\Component;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Pages\SimplePage;
+use Filament\Schemas\Components\Component;
+use Filament\Schemas\Schema;
 use Illuminate\Support\Facades\Auth;
 
 class EmailTwoFactorChallenge extends SimplePage
 {
-    protected static string $view = 'filament.pages.auth.email-two-factor-challenge';
+    protected string $view = 'filament.pages.auth.email-two-factor-challenge';
 
     protected static ?string $title = null;
 
@@ -80,10 +80,10 @@ class EmailTwoFactorChallenge extends SimplePage
     /**
      * Define the form schema for the two-factor authentication challenge.
      */
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 $this->getCodeFormComponent(),
             ])
             ->statePath('data');
@@ -92,7 +92,7 @@ class EmailTwoFactorChallenge extends SimplePage
     /**
      * Get the verification code input form component.
      *
-     * @return \Filament\Forms\Components\Component The configured code input component
+     * @return Component The configured code input component
      */
     protected function getCodeFormComponent(): Component
     {

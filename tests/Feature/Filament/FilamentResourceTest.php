@@ -2,11 +2,17 @@
 
 namespace Tests\Feature\Filament;
 
-use App\Filament\Resources\DeviceResource;
-use App\Filament\Resources\IpAddressResource;
-use App\Filament\Resources\UserResource;
+use App\Filament\Resources\Devices\Pages\CreateDevice;
+use App\Filament\Resources\Devices\Pages\EditDevice;
+use App\Filament\Resources\Devices\Pages\ListDevices;
+use App\Filament\Resources\IpAddresses\Pages\CreateIpAddress;
+use App\Filament\Resources\IpAddresses\Pages\ListIpAddresses;
+use App\Filament\Resources\Users\Pages\CreateUser;
+use App\Filament\Resources\Users\Pages\EditUser;
+use App\Filament\Resources\Users\Pages\ListUsers;
 use App\Models\Device;
 use App\Models\IpAddress;
+use App\Models\IpAddressGroup;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
@@ -16,6 +22,11 @@ class FilamentResourceTest extends TestCase
 {
     use RefreshDatabase;
 
+    /**
+     * Verify device resource can list devices.
+     *
+     * Expect: The device list renders and displays all device fixtures.
+     */
     public function test_device_resource_can_list_devices(): void
     {
         $user = User::factory()->create(['is_admin' => true]);
@@ -23,11 +34,16 @@ class FilamentResourceTest extends TestCase
 
         $this->actingAs($user);
 
-        Livewire::test(DeviceResource\Pages\ListDevices::class)
+        Livewire::test(ListDevices::class)
             ->assertSuccessful()
             ->assertCanSeeTableRecords(Device::all());
     }
 
+    /**
+     * Verify device resource can create device.
+     *
+     * Expect: Submitting valid device fields produces no form errors and persists the new device.
+     */
     public function test_device_resource_can_create_device(): void
     {
         $user = User::factory()->create(['is_admin' => true]);
@@ -43,7 +59,7 @@ class FilamentResourceTest extends TestCase
             'description' => 'Test Description',
         ];
 
-        Livewire::test(DeviceResource\Pages\CreateDevice::class)
+        Livewire::test(CreateDevice::class)
             ->fillForm($deviceData)
             ->call('create')
             ->assertHasNoFormErrors();
@@ -54,6 +70,11 @@ class FilamentResourceTest extends TestCase
         ]);
     }
 
+    /**
+     * Verify device resource can edit device.
+     *
+     * Expect: Saving the edit form persists the updated device name without form errors.
+     */
     public function test_device_resource_can_edit_device(): void
     {
         $user = User::factory()->create(['is_admin' => true]);
@@ -61,7 +82,7 @@ class FilamentResourceTest extends TestCase
 
         $this->actingAs($user);
 
-        Livewire::test(DeviceResource\Pages\EditDevice::class, ['record' => $device->id])
+        Livewire::test(EditDevice::class, ['record' => $device->id])
             ->fillForm(['name' => 'Updated Name'])
             ->call('save')
             ->assertHasNoFormErrors();
@@ -69,6 +90,11 @@ class FilamentResourceTest extends TestCase
         $this->assertEquals('Updated Name', $device->fresh()->name);
     }
 
+    /**
+     * Verify IP address resource can list addresses.
+     *
+     * Expect: The address list renders and displays all address fixtures.
+     */
     public function test_ip_address_resource_can_list_addresses(): void
     {
         $user = User::factory()->create(['is_admin' => true]);
@@ -76,11 +102,16 @@ class FilamentResourceTest extends TestCase
 
         $this->actingAs($user);
 
-        Livewire::test(IpAddressResource\Pages\ListIpAddresses::class)
+        Livewire::test(ListIpAddresses::class)
             ->assertSuccessful()
             ->assertCanSeeTableRecords(IpAddress::all());
     }
 
+    /**
+     * Verify IP address resource can create address.
+     *
+     * Expect: Submitting valid address fields produces no form errors and persists the address.
+     */
     public function test_ip_address_resource_can_create_address(): void
     {
         $user = User::factory()->create(['is_admin' => true]);
@@ -95,7 +126,7 @@ class FilamentResourceTest extends TestCase
             'description' => 'Test IP Address',
         ];
 
-        Livewire::test(IpAddressResource\Pages\CreateIpAddress::class)
+        Livewire::test(CreateIpAddress::class)
             ->fillForm($ipData)
             ->call('create')
             ->assertHasNoFormErrors();
@@ -106,6 +137,11 @@ class FilamentResourceTest extends TestCase
         ]);
     }
 
+    /**
+     * Verify user resource can list users.
+     *
+     * Expect: The user list renders and displays all user fixtures.
+     */
     public function test_user_resource_can_list_users(): void
     {
         $admin = User::factory()->create(['is_admin' => true]);
@@ -113,11 +149,16 @@ class FilamentResourceTest extends TestCase
 
         $this->actingAs($admin);
 
-        Livewire::test(UserResource\Pages\ListUsers::class)
+        Livewire::test(ListUsers::class)
             ->assertSuccessful()
             ->assertCanSeeTableRecords(User::all());
     }
 
+    /**
+     * Verify user resource can create user.
+     *
+     * Expect: Submitting valid user fields produces no form errors and persists the account.
+     */
     public function test_user_resource_can_create_user(): void
     {
         $admin = User::factory()->create(['is_admin' => true]);
@@ -131,7 +172,7 @@ class FilamentResourceTest extends TestCase
             'is_admin' => false,
         ];
 
-        Livewire::test(UserResource\Pages\CreateUser::class)
+        Livewire::test(CreateUser::class)
             ->fillForm($userData)
             ->call('create')
             ->assertHasNoFormErrors();
@@ -142,6 +183,11 @@ class FilamentResourceTest extends TestCase
         ]);
     }
 
+    /**
+     * Verify user resource can edit user.
+     *
+     * Expect: Saving the user form persists the new name without form errors.
+     */
     public function test_user_resource_can_edit_user(): void
     {
         $admin = User::factory()->create(['is_admin' => true]);
@@ -149,7 +195,7 @@ class FilamentResourceTest extends TestCase
 
         $this->actingAs($admin);
 
-        Livewire::test(UserResource\Pages\EditUser::class, ['record' => $user->id])
+        Livewire::test(EditUser::class, ['record' => $user->id])
             ->fillForm(['name' => 'Updated User'])
             ->call('save')
             ->assertHasNoFormErrors();
@@ -157,12 +203,17 @@ class FilamentResourceTest extends TestCase
         $this->assertEquals('Updated User', $user->fresh()->name);
     }
 
+    /**
+     * Verify device resource validates required fields.
+     *
+     * Expect: An empty device name produces a required-field validation error.
+     */
     public function test_device_resource_validates_required_fields(): void
     {
         $user = User::factory()->create(['is_admin' => true]);
         $this->actingAs($user);
 
-        Livewire::test(DeviceResource\Pages\CreateDevice::class)
+        Livewire::test(CreateDevice::class)
             ->fillForm([
                 'name' => '', // Required field empty
             ])
@@ -170,15 +221,20 @@ class FilamentResourceTest extends TestCase
             ->assertHasFormErrors(['name']);
     }
 
+    /**
+     * Exercise address creation with valid form input.
+     *
+     * Expect: The valid-address creation action executes without a runtime error; invalid input is not tested.
+     */
     public function test_ip_address_resource_validates_ip_format(): void
     {
         $user = User::factory()->create(['is_admin' => true]);
         $this->actingAs($user);
 
-        $group = \App\Models\IpAddressGroup::factory()->create();
+        $group = IpAddressGroup::factory()->create();
 
         // Test mit validen Daten zuerst
-        $validResponse = Livewire::test(IpAddressResource\Pages\CreateIpAddress::class)
+        $validResponse = Livewire::test(CreateIpAddress::class)
             ->fillForm([
                 'ip_address' => '192.168.1.100', // Valid IP format
                 'version' => 4,
@@ -190,6 +246,11 @@ class FilamentResourceTest extends TestCase
         $this->assertTrue(true); // Dieser Test checkt nur dass valide IPs funktionieren
     }
 
+    /**
+     * Verify user resource validates email uniqueness.
+     *
+     * Expect: A duplicate user email produces a form validation error.
+     */
     public function test_user_resource_validates_email_uniqueness(): void
     {
         $admin = User::factory()->create(['is_admin' => true]);
@@ -197,7 +258,7 @@ class FilamentResourceTest extends TestCase
 
         $this->actingAs($admin);
 
-        Livewire::test(UserResource\Pages\CreateUser::class)
+        Livewire::test(CreateUser::class)
             ->fillForm([
                 'name' => 'New User',
                 'email' => 'existing@example.com', // Duplicate email
@@ -208,6 +269,11 @@ class FilamentResourceTest extends TestCase
             ->assertHasFormErrors(['email']);
     }
 
+    /**
+     * Verify filament resources are protected by auth.
+     *
+     * Expect: A guest device-page request redirects to the login page.
+     */
     public function test_filament_resources_are_protected_by_auth(): void
     {
         // Test ohne Authentication über HTTP-Request
@@ -215,6 +281,11 @@ class FilamentResourceTest extends TestCase
         $response->assertRedirect('/admin/login');
     }
 
+    /**
+     * Request the user-management route with a non-admin fixture.
+     *
+     * Expect: The non-admin fixture receives HTTP 302; the redirect destination and role enforcement are not asserted.
+     */
     public function test_non_admin_users_cannot_access_user_resource(): void
     {
         $regularUser = User::factory()->create(['is_admin' => false]);
@@ -224,6 +295,11 @@ class FilamentResourceTest extends TestCase
         $response->assertStatus(302); // Redirect wegen fehlenden Permissions
     }
 
+    /**
+     * Verify device IP assignment through resource.
+     *
+     * Expect: The relationship contains the assigned address and its status is assigned.
+     */
     public function test_device_ip_assignment_through_resource(): void
     {
         $user = User::factory()->create(['is_admin' => true]);

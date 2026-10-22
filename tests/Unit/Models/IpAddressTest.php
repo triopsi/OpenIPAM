@@ -12,6 +12,11 @@ class IpAddressTest extends TestCase
 {
     use RefreshDatabase;
 
+    /**
+     * Verify IP address can be created with valid attributes.
+     *
+     * Expect: The saved address retains its supplied network fields and available status.
+     */
     public function test_ip_address_can_be_created_with_valid_attributes(): void
     {
         $ipAddress = IpAddress::create([
@@ -31,6 +36,11 @@ class IpAddressTest extends TestCase
         $this->assertEquals('available', $ipAddress->status);
     }
 
+    /**
+     * Verify IP address version is cast to integer.
+     *
+     * Expect: The model exposes IP version 4 as an integer.
+     */
     public function test_ip_address_version_is_cast_to_integer(): void
     {
         $ipAddress = IpAddress::create([
@@ -43,6 +53,11 @@ class IpAddressTest extends TestCase
         $this->assertEquals(4, $ipAddress->version);
     }
 
+    /**
+     * Verify IP address can check if available.
+     *
+     * Expect: Only an address with available status reports itself as available.
+     */
     public function test_ip_address_can_check_if_available(): void
     {
         $availableIp = IpAddress::factory()->create(['status' => 'available']);
@@ -54,6 +69,11 @@ class IpAddressTest extends TestCase
         $this->assertFalse($reservedIp->isAvailable());
     }
 
+    /**
+     * Verify IP address belongs to group.
+     *
+     * Expect: The address resolves its related group and the group's expected name.
+     */
     public function test_ip_address_belongs_to_group(): void
     {
         $group = IpAddressGroup::factory()->create(['name' => 'VLAN 100']);
@@ -63,6 +83,11 @@ class IpAddressTest extends TestCase
         $this->assertEquals('VLAN 100', $ipAddress->group->name);
     }
 
+    /**
+     * Verify IP address can have multiple devices.
+     *
+     * Expect: The relationship returns both devices attached to the address.
+     */
     public function test_ip_address_can_have_multiple_devices(): void
     {
         $ipAddress = IpAddress::factory()->create();
@@ -77,6 +102,11 @@ class IpAddressTest extends TestCase
         $this->assertTrue($ipAddress->devices->contains($device2));
     }
 
+    /**
+     * Verify IPv4 address validation.
+     *
+     * Expect: All valid IPv4 fixtures are stored with version 4.
+     */
     public function test_ipv4_address_validation(): void
     {
         $validIpv4Addresses = [
@@ -100,6 +130,11 @@ class IpAddressTest extends TestCase
         }
     }
 
+    /**
+     * Verify IPv6 address support.
+     *
+     * Expect: All IPv6 fixtures are stored unchanged with version 6.
+     */
     public function test_ipv6_address_support(): void
     {
         $validIpv6Addresses = [
@@ -121,6 +156,11 @@ class IpAddressTest extends TestCase
         }
     }
 
+    /**
+     * Verify IP address status values.
+     *
+     * Expect: Each supported status is persisted as supplied.
+     */
     public function test_ip_address_status_values(): void
     {
         $statuses = ['available', 'assigned', 'reserved', 'blocked'];
@@ -131,6 +171,11 @@ class IpAddressTest extends TestCase
         }
     }
 
+    /**
+     * Verify IP address subnet formats.
+     *
+     * Expect: Each subnet-format fixture is persisted unchanged.
+     */
     public function test_ip_address_subnet_formats(): void
     {
         $subnetFormats = [
@@ -146,6 +191,11 @@ class IpAddressTest extends TestCase
         }
     }
 
+    /**
+     * Verify IP address relationship pivot data.
+     *
+     * Expect: The device relationship exposes the primary flag and pivot timestamps.
+     */
     public function test_ip_address_relationship_pivot_data(): void
     {
         $ipAddress = IpAddress::factory()->create();

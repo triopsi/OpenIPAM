@@ -14,6 +14,8 @@ class AuthControllerTest extends TestCase
     /**
      * Test successful user login.
      *
+     * Expect: HTTP 200 returns user details and a newly persisted API token.
+     *
      * @return void
      */
     public function test_user_can_login_with_valid_credentials()
@@ -50,6 +52,8 @@ class AuthControllerTest extends TestCase
     /**
      * Test login with invalid credentials.
      *
+     * Expect: Invalid credentials return HTTP 422 with the authentication error message.
+     *
      * @return void
      */
     public function test_user_cannot_login_with_invalid_credentials()
@@ -67,6 +71,8 @@ class AuthControllerTest extends TestCase
 
     /**
      * Test user registration.
+     *
+     * Expect: HTTP 201 creates the account and returns its user details and registration token.
      *
      * @return void
      */
@@ -103,6 +109,8 @@ class AuthControllerTest extends TestCase
     /**
      * Test registration with invalid data.
      *
+     * Expect: HTTP 422 reports name, email and password validation errors.
+     *
      * @return void
      */
     public function test_user_cannot_register_with_invalid_data()
@@ -119,6 +127,8 @@ class AuthControllerTest extends TestCase
 
     /**
      * Test getting current user.
+     *
+     * Expect: HTTP 200 returns the authenticated user's ID, name and email.
      *
      * @return void
      */
@@ -140,6 +150,8 @@ class AuthControllerTest extends TestCase
     /**
      * Test getting current user without authentication.
      *
+     * Expect: A guest profile request returns HTTP 401.
+     *
      * @return void
      */
     public function test_unauthenticated_user_cannot_get_profile()
@@ -151,6 +163,8 @@ class AuthControllerTest extends TestCase
 
     /**
      * Test user logout.
+     *
+     * Expect: HTTP 200 confirms logout and deletes the current token.
      *
      * @return void
      */
@@ -176,6 +190,8 @@ class AuthControllerTest extends TestCase
 
     /**
      * Test token expiration handling.
+     *
+     * Expect: Login succeeds and stores the token with the supplied expiration timestamp.
      *
      * @return void
      */
@@ -205,6 +221,8 @@ class AuthControllerTest extends TestCase
 
     /**
      * Test never expiring token.
+     *
+     * Expect: Login accepts the option and persists the named token; a null expiration is not asserted.
      *
      * @return void
      */

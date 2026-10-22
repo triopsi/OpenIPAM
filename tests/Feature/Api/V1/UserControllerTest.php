@@ -22,7 +22,10 @@ class UserControllerTest extends TestCase
     {
         parent::setUp();
 
-        $this->user = User::factory()->create();
+        $this->user = User::factory()->create([
+            'name' => 'API Test Operator',
+            'email' => 'operator@example.test',
+        ]);
         $this->token = $this->user->createToken('Test Token')->plainTextToken;
     }
 
@@ -36,6 +39,8 @@ class UserControllerTest extends TestCase
 
     /**
      * Test listing users.
+     *
+     * Expect: HTTP 200 returns the four user fixtures with pagination metadata.
      *
      * @return void
      */
@@ -73,6 +78,8 @@ class UserControllerTest extends TestCase
     /**
      * Test creating a user.
      *
+     * Expect: HTTP 201 returns the new user and persists the submitted profile values.
+     *
      * @return void
      */
     public function test_can_create_user()
@@ -108,6 +115,8 @@ class UserControllerTest extends TestCase
     /**
      * Test creating user with validation errors.
      *
+     * Expect: HTTP 422 reports name, email and password validation errors.
+     *
      * @return void
      */
     public function test_cannot_create_user_with_invalid_data()
@@ -125,6 +134,8 @@ class UserControllerTest extends TestCase
 
     /**
      * Test creating user with duplicate email.
+     *
+     * Expect: HTTP 422 reports an email validation error for a duplicate address.
      *
      * @return void
      */
@@ -145,6 +156,8 @@ class UserControllerTest extends TestCase
 
     /**
      * Test showing a specific user.
+     *
+     * Expect: HTTP 200 returns the requested user's profile attributes.
      *
      * @return void
      */
@@ -169,6 +182,8 @@ class UserControllerTest extends TestCase
     /**
      * Test showing non-existent user.
      *
+     * Expect: An unknown user ID returns HTTP 404.
+     *
      * @return void
      */
     public function test_cannot_show_nonexistent_user()
@@ -181,6 +196,8 @@ class UserControllerTest extends TestCase
 
     /**
      * Test updating a user.
+     *
+     * Expect: HTTP 200 returns the edited profile values and persists them.
      *
      * @return void
      */
@@ -222,6 +239,8 @@ class UserControllerTest extends TestCase
     /**
      * Test updating user password.
      *
+     * Expect: HTTP 200 updates the user and replaces the previous password hash.
+     *
      * @return void
      */
     public function test_can_update_user_password()
@@ -242,6 +261,8 @@ class UserControllerTest extends TestCase
 
     /**
      * Test deleting a user.
+     *
+     * Expect: HTTP 200 confirms deletion and removes the requested user record.
      *
      * @return void
      */
@@ -265,6 +286,8 @@ class UserControllerTest extends TestCase
     /**
      * Test cannot delete own account.
      *
+     * Expect: HTTP 400 rejects self-deletion and preserves the caller's account.
+     *
      * @return void
      */
     public function test_cannot_delete_own_account()
@@ -284,6 +307,8 @@ class UserControllerTest extends TestCase
 
     /**
      * Test user deletion revokes API tokens.
+     *
+     * Expect: Deleting a user removes both API-token records belonging to that user.
      *
      * @return void
      */
@@ -309,6 +334,8 @@ class UserControllerTest extends TestCase
     /**
      * Test searching users.
      *
+     * Expect: Searching for john returns John Doe and Bob Johnson.
+     *
      * @return void
      */
     public function test_can_search_users()
@@ -328,6 +355,8 @@ class UserControllerTest extends TestCase
 
     /**
      * Test filtering users by language.
+     *
+     * Expect: The language filter returns the three English-language accounts only.
      *
      * @return void
      */
@@ -353,6 +382,8 @@ class UserControllerTest extends TestCase
 
     /**
      * Test filtering users by 2FA status.
+     *
+     * Expect: The two-factor filter returns the two accounts with email 2FA enabled.
      *
      * @return void
      */
@@ -385,6 +416,8 @@ class UserControllerTest extends TestCase
     /**
      * Test user pagination.
      *
+     * Expect: Page one contains ten users and metadata includes all twenty-six accounts.
+     *
      * @return void
      */
     public function test_users_pagination()
@@ -416,6 +449,8 @@ class UserControllerTest extends TestCase
 
     /**
      * Test sorting users.
+     *
+     * Expect: Alpha User appears before Zebra User when sorted by name.
      *
      * @return void
      */
@@ -452,6 +487,8 @@ class UserControllerTest extends TestCase
     /**
      * Test unauthorized access.
      *
+     * Expect: A guest user-management request returns HTTP 401.
+     *
      * @return void
      */
     public function test_unauthorized_access_denied()
@@ -463,6 +500,8 @@ class UserControllerTest extends TestCase
 
     /**
      * Test creating user with minimal data.
+     *
+     * Expect: The required profile fields create a user with the expected default settings.
      *
      * @return void
      */

@@ -2,10 +2,11 @@
 
 namespace Database\Factories;
 
+use App\Models\IpAddressGroup;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\IpAddressGroup>
+ * @extends Factory<IpAddressGroup>
  */
 class IpAddressGroupFactory extends Factory
 {

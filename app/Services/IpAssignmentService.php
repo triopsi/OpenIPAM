@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\IpAddress;
 use App\Models\Setting;
+use Exception;
 use Illuminate\Support\Facades\DB;
 
 class IpAssignmentService
@@ -15,7 +16,7 @@ class IpAssignmentService
      * or default group, then falling back to a global search if nothing is found.
      *
      * @param  int|null  $preferredGroupId  The preferred group ID to search in first
-     * @return \App\Models\IpAddress|null The next available IP address or null
+     * @return IpAddress|null The next available IP address or null
      */
     public function getNextAvailableIp(?int $preferredGroupId = null): ?IpAddress
     {
@@ -43,7 +44,7 @@ class IpAssignmentService
      * Find the next available IP address within a specific group.
      *
      * @param  int  $groupId  The group ID to search within
-     * @return \App\Models\IpAddress|null The next available IP or null
+     * @return IpAddress|null The next available IP or null
      */
     protected function findNextAvailableInGroup(int $groupId): ?IpAddress
     {
@@ -57,7 +58,7 @@ class IpAssignmentService
     /**
      * Find the next available IP address globally across all groups.
      *
-     * @return \App\Models\IpAddress|null The next available IP or null
+     * @return IpAddress|null The next available IP or null
      */
     protected function findNextAvailableGlobally(): ?IpAddress
     {
@@ -78,7 +79,7 @@ class IpAssignmentService
      * @param  int  $ipAddressId  The IP address ID to assign
      * @param  bool  $isPrimary  Whether this should be the primary IP
      *
-     * @throws \Exception When the IP address is not available
+     * @throws Exception When the IP address is not available
      */
     public function assignIpToDevice(int $deviceId, int $ipAddressId, bool $isPrimary = false): void
     {
@@ -86,7 +87,7 @@ class IpAssignmentService
 
         // Prüfe ob IP verfügbar ist
         if ($ipAddress->status !== 'available') {
-            throw new \Exception('IP-Adresse ist nicht verfügbar');
+            throw new Exception('IP-Adresse ist nicht verfügbar');
         }
 
         // Wenn primäre IP, setze andere als nicht-primär

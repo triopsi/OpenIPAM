@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Api\V1;
 
+use App\Models\IpAddress;
 use App\Models\IpAddressGroup;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -38,6 +39,8 @@ class IpAddressGroupControllerTest extends TestCase
     /**
      * Test listing IP address groups.
      *
+     * Expect: HTTP 200 returns address groups with pagination metadata.
+     *
      * @return void
      */
     public function test_can_list_ip_address_groups()
@@ -69,6 +72,8 @@ class IpAddressGroupControllerTest extends TestCase
     /**
      * Test creating an IP address group.
      *
+     * Expect: HTTP 201 returns the new group and persists its attributes.
+     *
      * @return void
      */
     public function test_can_create_ip_address_group()
@@ -98,6 +103,8 @@ class IpAddressGroupControllerTest extends TestCase
     /**
      * Test creating group with validation errors.
      *
+     * Expect: HTTP 422 reports invalid group-name input.
+     *
      * @return void
      */
     public function test_cannot_create_group_with_invalid_data()
@@ -114,6 +121,8 @@ class IpAddressGroupControllerTest extends TestCase
 
     /**
      * Test showing a specific IP address group.
+     *
+     * Expect: HTTP 200 returns the requested address group's attributes.
      *
      * @return void
      */
@@ -138,6 +147,8 @@ class IpAddressGroupControllerTest extends TestCase
     /**
      * Test showing non-existent group.
      *
+     * Expect: An unknown group ID returns HTTP 404.
+     *
      * @return void
      */
     public function test_cannot_show_nonexistent_group()
@@ -150,6 +161,8 @@ class IpAddressGroupControllerTest extends TestCase
 
     /**
      * Test updating an IP address group.
+     *
+     * Expect: HTTP 200 returns the changed values and persists the group update.
      *
      * @return void
      */
@@ -186,6 +199,8 @@ class IpAddressGroupControllerTest extends TestCase
     /**
      * Test deleting an IP address group.
      *
+     * Expect: HTTP 200 confirms deletion and removes the group record.
+     *
      * @return void
      */
     public function test_can_delete_ip_address_group()
@@ -208,6 +223,8 @@ class IpAddressGroupControllerTest extends TestCase
     /**
      * Test searching IP address groups.
      *
+     * Expect: The search returns the two server-group fixtures.
+     *
      * @return void
      */
     public function test_can_search_ip_address_groups()
@@ -227,6 +244,8 @@ class IpAddressGroupControllerTest extends TestCase
 
     /**
      * Test group pagination.
+     *
+     * Expect: Page one contains ten groups and metadata reports twenty-five total records.
      *
      * @return void
      */
@@ -260,6 +279,8 @@ class IpAddressGroupControllerTest extends TestCase
     /**
      * Test sorting IP address groups.
      *
+     * Expect: Ascending and descending sorting place the appropriate named group first.
+     *
      * @return void
      */
     public function test_can_sort_ip_address_groups()
@@ -287,6 +308,8 @@ class IpAddressGroupControllerTest extends TestCase
     /**
      * Test group with IP addresses count.
      *
+     * Expect: The group response includes the expected number of associated IP addresses.
+     *
      * @return void
      */
     public function test_group_shows_ip_addresses_count()
@@ -294,7 +317,7 @@ class IpAddressGroupControllerTest extends TestCase
         $group = IpAddressGroup::factory()->create(['name' => 'Test Group']);
 
         // Create IP addresses in this group
-        \App\Models\IpAddress::factory()->count(3)->create(['group_id' => $group->id]);
+        IpAddress::factory()->count(3)->create(['group_id' => $group->id]);
 
         $response = $this->withHeaders($this->authHeaders())
             ->getJson("/api/v1/ip-address-groups/{$group->id}");
@@ -308,6 +331,8 @@ class IpAddressGroupControllerTest extends TestCase
     /**
      * Test unauthorized access.
      *
+     * Expect: A guest group request returns HTTP 401.
+     *
      * @return void
      */
     public function test_unauthorized_access_denied()
@@ -319,6 +344,8 @@ class IpAddressGroupControllerTest extends TestCase
 
     /**
      * Test creating group with only required field.
+     *
+     * Expect: Supplying the required name creates a group with the expected defaults.
      *
      * @return void
      */
@@ -341,6 +368,8 @@ class IpAddressGroupControllerTest extends TestCase
 
     /**
      * Test updating group with partial data.
+     *
+     * Expect: Only the supplied group attributes change and the other values are preserved.
      *
      * @return void
      */

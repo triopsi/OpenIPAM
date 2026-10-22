@@ -22,3 +22,13 @@ yarn-error.log
 /.vscode
 /.zed
 .DS_Store
+
+.env.*
+!.env.example
+!.env.production.example
+/database/*.sqlite*
+/public/js/filament/
+/public/css/filament/
+/public/fonts/filament/
+/storage/logs/*
+!/storage/logs/.gitignore

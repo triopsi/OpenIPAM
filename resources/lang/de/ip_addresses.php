@@ -120,4 +120,9 @@ return [
             ],
         ],
     ],
+    'subnet_placeholder' => '255.255.255.0 oder /24',
+    'invalid_subnet_title' => 'Ungültiges Subnetz',
+    'invalid_subnet' => 'Bitte geben Sie ein gültiges Subnetz an.',
+    'generated_title' => 'IP-Adressen generiert',
+    'generated_count' => ':count IP-Adressen wurden erstellt.',
 ];

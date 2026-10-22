@@ -1,0 +1,25 @@
+repos:
+  - repo: local
+    hooks:
+      - id: pint
+        name: Laravel Pint
+        entry: vendor/bin/pint --test
+        language: system
+        types: [php]
+      - id: eslint
+        name: ESLint
+        entry: npm run lint-js --
+        language: system
+        files: ^resources/js/.*\.js$
+      - id: test-docs
+        name: PHPUnit descriptions and expectations
+        entry: php scripts/check-test-docs.php
+        language: system
+        files: ^tests/.*\.php$
+        pass_filenames: false
+      - id: composer-validate
+        name: Composer manifest and lockfile
+        entry: composer validate --strict
+        language: system
+        files: ^composer\.(json|lock)$
+        pass_filenames: false

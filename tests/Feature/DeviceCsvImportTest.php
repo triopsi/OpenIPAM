@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use League\Csv\Reader;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
@@ -31,6 +32,11 @@ class DeviceCsvImportTest extends TestCase
         Storage::fake('local');
     }
 
+    /**
+     * Import devices from CSV with header.
+     *
+     * Expect: Three devices are imported with mapped attributes, and an empty URL becomes null.
+     */
     #[Test]
     public function it_can_import_devices_from_csv_with_header()
     {
@@ -80,6 +86,11 @@ class DeviceCsvImportTest extends TestCase
         $this->assertNull($switch->url); // Empty URL should be null
     }
 
+    /**
+     * Import devices from CSV without header.
+     *
+     * Expect: Both headerless records are imported with the mapped device names and hostnames.
+     */
     #[Test]
     public function it_can_import_devices_from_csv_without_header()
     {
@@ -114,6 +125,11 @@ class DeviceCsvImportTest extends TestCase
         $this->assertEquals('router02.example.com', $router->hostname);
     }
 
+    /**
+     * Check handling of different delimiters.
+     *
+     * Expect: Semicolon-separated records import two devices with the expected mapped fields.
+     */
     #[Test]
     public function it_handles_different_delimiters()
     {
@@ -146,6 +162,11 @@ class DeviceCsvImportTest extends TestCase
         $this->assertEquals('router', $router->type);
     }
 
+    /**
+     * Check skipping of duplicates when skip mode is selected.
+     *
+     * Expect: The duplicate keeps its original values while a new device is imported.
+     */
     #[Test]
     public function it_skips_duplicates_when_skip_mode_is_selected()
     {
@@ -191,6 +212,11 @@ class DeviceCsvImportTest extends TestCase
         ]);
     }
 
+    /**
+     * Exercise duplicate-device imports in overwrite mode.
+     *
+     * Expect: The existing device receives the replacement hostname, type and description.
+     */
     #[Test]
     public function it_overwrites_duplicates_when_overwrite_mode_is_selected()
     {
@@ -232,6 +258,11 @@ class DeviceCsvImportTest extends TestCase
         $this->assertEquals('New description', $router->description);
     }
 
+    /**
+     * Exercise duplicate-device imports in merge mode.
+     *
+     * Expect: Existing populated values remain, while empty location and description fields are filled.
+     */
     #[Test]
     public function it_merges_duplicates_when_merge_mode_is_selected()
     {
@@ -276,6 +307,11 @@ class DeviceCsvImportTest extends TestCase
         $this->assertEquals('New description', $router->description); // Filled empty field
     }
 
+    /**
+     * Apply defaults when optional import fields are missing.
+     *
+     * Expect: Missing status and type values default to active and other.
+     */
     #[Test]
     public function it_sets_default_values_for_missing_fields()
     {
@@ -304,6 +340,11 @@ class DeviceCsvImportTest extends TestCase
         $this->assertEquals('other', $router->type); // Default type
     }
 
+    /**
+     * Check skipping of rows without name.
+     *
+     * Expect: Only the named row creates a device; unnamed rows are ignored.
+     */
     #[Test]
     public function it_skips_rows_without_name()
     {
@@ -335,6 +376,11 @@ class DeviceCsvImportTest extends TestCase
         ]);
     }
 
+    /**
+     * Check handling of tab delimiter.
+     *
+     * Expect: Tab-separated records create two devices with the expected mapped fields.
+     */
     #[Test]
     public function it_handles_tab_delimiter()
     {
@@ -365,6 +411,11 @@ class DeviceCsvImportTest extends TestCase
         $this->assertEquals('router', $router->type);
     }
 
+    /**
+     * Ignore CSV columns without an import mapping.
+     *
+     * Expect: Only mapped columns populate the imported device.
+     */
     #[Test]
     public function it_ignores_unmapped_columns()
     {
@@ -401,7 +452,7 @@ class DeviceCsvImportTest extends TestCase
     {
         $filePath = Storage::path($data['csv_file']);
 
-        $csv = \League\Csv\Reader::createFromPath($filePath, 'r');
+        $csv = Reader::createFromPath($filePath, 'r');
         $delimiter = $data['delimiter'] === '\t' ? "\t" : $data['delimiter'];
         $csv->setDelimiter($delimiter);
 
@@ -564,6 +615,11 @@ class DeviceCsvImportTest extends TestCase
         }
     }
 
+    /**
+     * Import devices with primary IP addresses.
+     *
+     * Expect: IPv4 and IPv6 addresses are created and linked as their devices' primary addresses.
+     */
     #[Test]
     public function it_can_import_devices_with_primary_ip_addresses()
     {
@@ -609,6 +665,11 @@ class DeviceCsvImportTest extends TestCase
         $this->assertEquals(6, $ipv6PrimaryIp->version);
     }
 
+    /**
+     * Import devices with secondary IP addresses.
+     *
+     * Expect: Each device receives its primary address and all valid secondary addresses.
+     */
     #[Test]
     public function it_can_import_devices_with_secondary_ip_addresses()
     {
@@ -656,6 +717,11 @@ class DeviceCsvImportTest extends TestCase
         $this->assertCount(4, $server->ipAddresses);
     }
 
+    /**
+     * Check skipping of invalid IP addresses.
+     *
+     * Expect: Devices still import, but invalid IP entries do not create address relationships.
+     */
     #[Test]
     public function it_skips_invalid_ip_addresses()
     {
@@ -698,6 +764,11 @@ class DeviceCsvImportTest extends TestCase
         $this->assertCount(1, $router3->ipAddresses);
     }
 
+    /**
+     * Reuse existing address records during device import.
+     *
+     * Expect: Both devices reference the existing address without creating a duplicate address record.
+     */
     #[Test]
     public function it_reuses_existing_ip_addresses()
     {
@@ -745,6 +816,11 @@ class DeviceCsvImportTest extends TestCase
         $this->assertEquals($existingIp->id, $router2->ipAddresses->first()->id);
     }
 
+    /**
+     * Check handling of overwrite mode with IP addresses.
+     *
+     * Expect: The replacement address becomes primary and the old address remains linked as secondary.
+     */
     #[Test]
     public function it_handles_overwrite_mode_with_ip_addresses()
     {

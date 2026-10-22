@@ -37,15 +37,15 @@ class DeviceController extends Controller
         }
 
         if ($request->filled('location')) {
-            $query->where('location', 'like', '%'.$request->location.'%');
+            $query->whereLike('location', '%'.$request->location.'%');
         }
 
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('hostname', 'like', "%{$search}%")
-                    ->orWhere('description', 'like', "%{$search}%");
+                $q->whereLike('name', "%{$search}%")
+                    ->orWhereLike('hostname', "%{$search}%")
+                    ->orWhereLike('description', "%{$search}%");
             });
         }
 

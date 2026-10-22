@@ -2,10 +2,11 @@
 
 namespace Database\Factories;
 
+use App\Models\Device;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Device>
+ * @extends Factory<Device>
  */
 class DeviceFactory extends Factory
 {
@@ -28,7 +29,7 @@ class DeviceFactory extends Factory
                 'Remote Site - Building B',
                 'Network Closet - Room 101',
             ]),
-            'status' => $this->faker->randomElement(['active', 'inactive', 'maintenance', 'decommissioned']),
+            'status' => $this->faker->randomElement(['active', 'inactive', 'maintenance']),
         ];
     }
 

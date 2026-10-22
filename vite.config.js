@@ -2,9 +2,11 @@ import {
     defineConfig
 } from 'vite';
 import laravel from 'laravel-vite-plugin';
+import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
     plugins: [
+        tailwindcss(),
         laravel({
             input: [
                 'resources/js/app.js',
@@ -21,7 +23,11 @@ export default defineConfig({
         },
     },
     server: {
-        cors: true,
+        host: '0.0.0.0',
+        port: 5173,
+        strictPort: true,
+        hmr: process.env.VITE_PORT ? { clientPort: Number(process.env.VITE_PORT) } : undefined,
+        cors: { origin: [/^http:\/\/localhost(?::\d+)?$/] },
         watch: {
             ignored: ['**/storage/framework/views/**'],
         },

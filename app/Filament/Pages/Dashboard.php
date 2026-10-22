@@ -3,13 +3,22 @@
 namespace App\Filament\Pages;
 
 use App\Filament\Widgets\DeviceIpTreeWidget;
+use App\Filament\Widgets\StatsOverviewWidget;
 use Filament\Pages\Dashboard as BaseDashboard;
 
 class Dashboard extends BaseDashboard
 {
-    protected static ?string $navigationIcon = 'heroicon-o-home';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-home';
 
-    protected static ?string $navigationLabel = 'Dashboard';
+    public static function getNavigationLabel(): string
+    {
+        return __('common.navigation.dashboard');
+    }
+
+    public function getTitle(): string
+    {
+        return __('common.navigation.dashboard');
+    }
 
     protected static ?int $navigationSort = 0;
 
@@ -23,6 +32,7 @@ class Dashboard extends BaseDashboard
     public function getWidgets(): array
     {
         return [
+            StatsOverviewWidget::class,
             DeviceIpTreeWidget::class,
         ];
     }

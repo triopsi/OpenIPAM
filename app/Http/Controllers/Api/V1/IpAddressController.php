@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\V1\IpAddressResource;
 use App\Models\IpAddress;
+use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -42,10 +43,10 @@ class IpAddressController extends Controller
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
-                $q->where('ip_address', 'like', "%{$search}%")
-                    ->orWhere('description', 'like', "%{$search}%")
-                    ->orWhere('subnet', 'like', "%{$search}%")
-                    ->orWhere('gateway', 'like', "%{$search}%");
+                $q->whereLike('ip_address', "%{$search}%")
+                    ->orWhereLike('description', "%{$search}%")
+                    ->orWhereLike('subnet', "%{$search}%")
+                    ->orWhereLike('gateway', "%{$search}%");
             });
         }
 
@@ -218,7 +219,7 @@ class IpAddressController extends Controller
                     'description' => $request->description,
                 ]);
                 $created++;
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $errors[] = "Failed to create IP {$ipAddress}: ".$e->getMessage();
             }
         }
