@@ -27,7 +27,7 @@ services:
       db:
         condition: service_healthy
   db:
-    image: mariadb:11.4
+    image: mariadb:13.0
     environment:
       MARIADB_DATABASE: openipam
       MARIADB_USER: openipam
