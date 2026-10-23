@@ -39,6 +39,8 @@ class AdminPanelProvider extends PanelProvider
             ->brandName('OpenIPAM')
             ->brandLogo(fn () => view('filament.admin.logo'))
             ->brandLogoHeight('auto')
+            ->globalSearchKeyBindings(['command+k', 'ctrl+k'])
+            ->globalSearchFieldKeyBindingSuffix()
             ->favicon(asset('images/favicon.png'))
             ->colors([
                 'primary' => Color::Blue,

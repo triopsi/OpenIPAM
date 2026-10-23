@@ -22,6 +22,8 @@ use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 
 /**
  * DeviceResource
@@ -43,6 +45,42 @@ use Filament\Tables\Table;
 class DeviceResource extends Resource
 {
     protected static ?string $model = Device::class;
+
+    protected static ?string $recordTitleAttribute = 'name';
+
+    protected static ?bool $isGlobalSearchForcedCaseInsensitive = true;
+
+    protected static int $globalSearchResultsLimit = 20;
+
+    /**
+     * Search device identifiers and assigned addresses from the panel's topbar.
+     *
+     * @return array<string> Columns and relationships supported by native global search.
+     */
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['name', 'hostname', 'mac_address', 'location', 'ipAddresses.ip_address'];
+    }
+
+    /** Eager-load address labels to avoid a separate query for each search result. */
+    public static function getGlobalSearchEloquentQuery(): Builder
+    {
+        return parent::getGlobalSearchEloquentQuery()->with('ipAddresses:id,ip_address');
+    }
+
+    /**
+     * Show identifying context alongside each device title using current-locale labels.
+     *
+     * @return array<string, string> Nonempty details, with at most three address labels.
+     */
+    public static function getGlobalSearchResultDetails(Model $record): array
+    {
+        return array_filter([
+            __('devices.fields.hostname') => $record->hostname,
+            __('devices.fields.mac_address') => $record->mac_address,
+            __('ip_addresses.plural_model_label') => $record->ipAddresses->take(3)->pluck('ip_address')->implode(', '),
+        ], fn ($value): bool => filled($value));
+    }
 
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-server';
 

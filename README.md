@@ -29,6 +29,7 @@ Once a homelab grows beyond a handful of devices, remembering which IP belongs t
 - **See subnet occupancy at a glance.** Open the subnet grid to distinguish free, assigned and reserved addresses, then assign a free host to a device with a click, creating the device inline if needed.
 - **Find the next free address.** See available, assigned and reserved IPs, and assign an available address to a device without searching through a spreadsheet.
 - **Keep devices and addresses together.** Record hostnames, MAC addresses, device types, locations, descriptions and service URLs. Associate multiple addresses with a device and mark its primary IP.
+- **Find records from anywhere.** Use the topbar search or press **⌘K / Ctrl+K** to find devices and IP addresses. Search names, hostnames, MAC addresses or address fragments, then open a matching record directly.
 - **Use your own device types.** Click **+** beside **Type** when creating or editing a device to add a type such as NAS or Smart plug. It is selected immediately and becomes available to every other device, including in filters.
 - **Give your network some structure.** Organize IPv4 and IPv6 addresses into groups, document subnets and VLAN IDs, and create address ranges in bulk.
 - **Bring your existing inventory.** Import device lists from CSV with column mapping and export selected devices when you need to share or process them elsewhere.

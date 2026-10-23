@@ -24,6 +24,8 @@ use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 
 /**
  * Resource for managing IP address records within the Filament admin panel.
@@ -47,6 +49,42 @@ use Filament\Tables\Table;
 class IpAddressResource extends Resource
 {
     protected static ?string $model = IpAddress::class;
+
+    protected static ?string $recordTitleAttribute = 'ip_address';
+
+    protected static ?bool $isGlobalSearchForcedCaseInsensitive = true;
+
+    protected static int $globalSearchResultsLimit = 20;
+
+    /**
+     * Find addresses by their value, network context or linked device identifiers.
+     *
+     * @return array<string> Columns and relationships supported by native global search.
+     */
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['ip_address', 'subnet', 'description', 'group.name', 'devices.name', 'devices.hostname'];
+    }
+
+    /** Eager-load group and device labels so result details do not issue per-row queries. */
+    public static function getGlobalSearchEloquentQuery(): Builder
+    {
+        return parent::getGlobalSearchEloquentQuery()->with(['group:id,name', 'devices:id,name']);
+    }
+
+    /**
+     * Add localized network and device context to an address search result.
+     *
+     * @return array<string, string> Nonempty details, with at most three device names.
+     */
+    public static function getGlobalSearchResultDetails(Model $record): array
+    {
+        return array_filter([
+            __('ip_addresses.fields.subnet') => $record->subnet,
+            __('ip_addresses.fields.group') => $record->group?->name,
+            __('devices.plural_model_label') => $record->devices->take(3)->pluck('name')->implode(', '),
+        ], fn ($value): bool => filled($value));
+    }
 
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-globe-alt';
 
