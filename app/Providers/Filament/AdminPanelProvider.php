@@ -77,6 +77,7 @@ class AdminPanelProvider extends PanelProvider
             ->databaseNotifications()
             ->databaseNotificationsPolling('30s')
             ->viteTheme('resources/css/filament/admin/theme.css')
+            ->renderHook(PanelsRenderHook::FOOTER, fn (): View => view('filament.version-footer'))
             ->userMenuItems([
                 'profile' => fn (Action $action): Action => $action
                     ->label(fn (): string => __('common.navigation.profile'))
