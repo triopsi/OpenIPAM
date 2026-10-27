@@ -21,7 +21,7 @@
         "@semantic-release/release-notes-generator": "^14.1.1",
         "@tailwindcss/vite": "^4.1",
         "concurrently": "^10.0",
-        "eslint": "^9.39.2",
+        "eslint": "^10.13.0",
         "laravel-vite-plugin": "^3.0",
         "semantic-release": "^25.0.9",
         "tailwindcss": "^4.1",
